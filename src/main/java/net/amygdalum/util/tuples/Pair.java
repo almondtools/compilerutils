@@ -1,58 +1,48 @@
 package net.amygdalum.util.tuples;
 
+import java.util.Objects;
+
 public class Pair<L, R> {
 	
-	private L left;
-	private R right;
+	public L left;
+	public R right;
 
 	public Pair(L left, R right) {
 		this.left = left;
 		this.right = right;
 	}
 	
-	public L getLeft() {
-		return left;
-	}
-	
-	public R getRight() {
-		return right;
-	}
-
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((left == null) ? 0 : left.hashCode());
-		result = prime * result + ((right == null) ? 0 : right.hashCode());
-		return result;
+		return 7 
+			+ ((left == null) ? 0 : left.hashCode() * 17)
+			+ ((right == null) ? 0 : right.hashCode() * 31);
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
-		Pair other = (Pair) obj;
-		if (left == null) {
-			if (other.left != null)
-				return false;
-		} else if (!left.equals(other.left))
-			return false;
-		if (right == null) {
-			if (other.right != null)
-				return false;
-		} else if (!right.equals(other.right))
-			return false;
-		return true;
+		}
+		Pair that = (Pair) obj;
+		return Objects.equals(this.left, that.left)
+			&& Objects.equals(this.right, that.right);
 	}
 	
 	@Override
 	public String toString() {
-		return new StringBuilder().append('(').append(left.toString()).append(',').append(right.toString()).append(')').toString();
+		return new StringBuilder().append('(')
+			.append(left.toString())
+			.append(',')
+			.append(right.toString())
+			.append(')').toString();
 	}
 	
 }
