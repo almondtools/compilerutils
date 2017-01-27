@@ -58,7 +58,8 @@ public class WorkSet<T> implements Queue<T> {
 
 	@Override
 	public boolean remove(Object o) {
-		return elements.remove(o);
+		return elements.remove(o)
+			| done.remove(o);
 	}
 
 	@Override
@@ -86,17 +87,20 @@ public class WorkSet<T> implements Queue<T> {
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		return elements.removeAll(c);
+		return elements.removeAll(c)
+			| done.removeAll(c);
 	}
 
 	@Override
 	public boolean retainAll(Collection<?> c) {
-		return elements.retainAll(c);
+		return elements.retainAll(c)
+			| done.retainAll(c);
 	}
 
 	@Override
 	public void clear() {
 		elements.clear();
+		done.clear();
 	}
 
 	@Override

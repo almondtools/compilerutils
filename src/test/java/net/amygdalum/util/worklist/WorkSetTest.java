@@ -290,6 +290,20 @@ public class WorkSetTest {
 	}
 
 	@Test
+	public void testRemoveObjectOnDone() throws Exception {
+		WorkSet<String> ws = new WorkSet<>();
+		ws.addAll(asList("0", "A", "B"));
+		ws.remove();
+		ws.remove();
+
+		ws.remove("A");
+
+		assertThat(ws.isEmpty(), is(false));
+		assertThat(ws.getDone(), contains("0"));
+		assertThat(ws.peek(), equalTo("B"));
+	}
+
+	@Test
 	public void testRemoveAll() throws Exception {
 		WorkSet<String> ws = new WorkSet<>();
 		ws.addAll(asList("A", "B"));
@@ -298,6 +312,20 @@ public class WorkSetTest {
 
 		assertThat(ws.isEmpty(), is(true));
 		assertThat(ws.getDone(), empty());
+		assertThat(ws.peek(), nullValue());
+	}
+
+	@Test
+	public void testRemoveAllOnDone() throws Exception {
+		WorkSet<String> ws = new WorkSet<>();
+		ws.addAll(asList("0", "A", "B"));
+		ws.remove();
+		ws.remove();
+
+		ws.removeAll(asList("A", "B"));
+
+		assertThat(ws.isEmpty(), is(true));
+		assertThat(ws.getDone(), contains("0"));
 		assertThat(ws.peek(), nullValue());
 	}
 
@@ -345,6 +373,19 @@ public class WorkSetTest {
 	public void testClear() throws Exception {
 		WorkSet<String> ws = new WorkSet<>();
 		ws.addAll(asList("A", "B"));
+
+		ws.clear();
+
+		assertThat(ws.isEmpty(), is(true));
+		assertThat(ws.getDone(), empty());
+		assertThat(ws.peek(), nullValue());
+	}
+
+	@Test
+	public void testClearOnDone() throws Exception {
+		WorkSet<String> ws = new WorkSet<>();
+		ws.addAll(asList("A", "B"));
+		ws.remove();
 
 		ws.clear();
 
