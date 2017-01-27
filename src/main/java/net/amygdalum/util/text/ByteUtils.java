@@ -1,14 +1,5 @@
 package net.amygdalum.util.text;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CodingErrorAction;
 import java.util.List;
 
 public final class ByteUtils {
@@ -69,37 +60,4 @@ public final class ByteUtils {
 		return len;
 	}
 
-	public static byte[] encode(String pattern) {
-		return encode(pattern, UTF_8);
-	}
-
-	public static byte[] encode(String pattern, Charset charset) {
-		try {
-			CharsetEncoder encoder = charset.newEncoder()
-				.onMalformedInput(CodingErrorAction.REPORT)
-				.onUnmappableCharacter(CodingErrorAction.REPORT);
-			ByteBuffer buffer = encoder.encode(CharBuffer.wrap(pattern));
-			byte[] encoded = new byte[buffer.limit()];
-			buffer.get(encoded);
-			return encoded;
-		} catch (CharacterCodingException e) {
-			return new byte[0];
-		}
-	}
-
-	public static String decode(byte[] pattern) {
-		return decode(pattern, UTF_8);
-	}
-
-	public static String decode(byte[] pattern, Charset charset) {
-		try {
-			CharsetDecoder decoder = charset.newDecoder()
-				.onMalformedInput(CodingErrorAction.REPORT)
-				.onUnmappableCharacter(CodingErrorAction.REPORT);
-			CharBuffer buffer = decoder.decode(ByteBuffer.wrap(pattern));
-			return buffer.toString();
-		} catch (CharacterCodingException e) {
-			return "";
-		}
-	}
 }

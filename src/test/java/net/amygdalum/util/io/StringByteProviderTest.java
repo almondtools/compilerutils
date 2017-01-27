@@ -1,12 +1,11 @@
 package net.amygdalum.util.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-
-import net.amygdalum.util.io.StringByteProvider;
 
 
 public class StringByteProviderTest {
@@ -253,6 +252,15 @@ public class StringByteProviderTest {
 		
 		assertThat(provider.finished(2), is(true));
 		assertThat(provider.finished(1), is(false));
+	}
+
+	@Test
+	public void testFinishedWithEncodedBytes() throws Exception {
+		StringByteProvider provider = new StringByteProvider("a", 0, UTF_8);
+		
+		provider.next();
+		
+		assertThat(provider.finished(), is(true));
 	}
 
 }

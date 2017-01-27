@@ -26,12 +26,12 @@ public class ByteUtilsTest {
 
 	@Test
 	public void testLastIndexOf() throws Exception {
-		assertThat(lastIndexOf(new byte[]{}, new byte[]{1}), equalTo(-1));
-		assertThat(lastIndexOf(new byte[]{0}, new byte[]{1}), equalTo(-1));
-		assertThat(lastIndexOf(new byte[]{0}, new byte[]{0}), equalTo(0));
-		assertThat(lastIndexOf(new byte[]{0,0}, new byte[]{0}), equalTo(1));
-		assertThat(lastIndexOf(new byte[]{0,1}, new byte[]{0}), equalTo(0));
-		assertThat(lastIndexOf(new byte[]{1,1}, new byte[]{0}), equalTo(-1));
+		assertThat(lastIndexOf(new byte[] {}, new byte[] { 1 }), equalTo(-1));
+		assertThat(lastIndexOf(new byte[] { 0 }, new byte[] { 1 }), equalTo(-1));
+		assertThat(lastIndexOf(new byte[] { 0 }, new byte[] { 0 }), equalTo(0));
+		assertThat(lastIndexOf(new byte[] { 0, 0 }, new byte[] { 0 }), equalTo(1));
+		assertThat(lastIndexOf(new byte[] { 0, 1 }, new byte[] { 0 }), equalTo(0));
+		assertThat(lastIndexOf(new byte[] { 1, 1 }, new byte[] { 0 }), equalTo(-1));
 	}
 
 	@Test
