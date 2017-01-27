@@ -84,10 +84,10 @@ public final class ByteEncoding {
 	}
 
 	public static byte[] encode(char pattern) {
-		return encode(pattern, UTF_8);
+		return encode(UTF_8, pattern);
 	}
 
-	public static byte[] encode(char pattern, Charset charset) {
+	public static byte[] encode(Charset charset, char pattern) {
 		try {
 			CharsetEncoder encoder = charset.newEncoder()
 				.onMalformedInput(CodingErrorAction.REPORT)
@@ -101,11 +101,11 @@ public final class ByteEncoding {
 		}
 	}
 
-	public static String decode(byte[] pattern) {
-		return decode(pattern, UTF_8);
+	public static String decode(byte... pattern) {
+		return decode(UTF_8, pattern);
 	}
 
-	public static String decode(byte[] pattern, Charset charset) {
+	public static String decode(Charset charset, byte ... pattern) {
 		try {
 			CharsetDecoder decoder = charset.newDecoder()
 				.onMalformedInput(CodingErrorAction.REPORT)
@@ -118,8 +118,8 @@ public final class ByteEncoding {
 	}
 
 	public static List<ByteRange> intervals(Charset charset, char from, char to) {
-		byte[] bytesFrom = encode(from, charset);
-		byte[] bytesTo = encode(to, charset);
+		byte[] bytesFrom = encode(charset, from);
+		byte[] bytesTo = encode(charset, to);
 
 		List<ByteRange> partitioning = getPartitioningFor(charset);
 
