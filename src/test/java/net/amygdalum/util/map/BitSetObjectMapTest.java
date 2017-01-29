@@ -4,9 +4,10 @@ import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.BitSet;
 
 import org.junit.Test;
+
+import net.amygdalum.util.bits.BitSet;
 
 public class BitSetObjectMapTest {
 
@@ -57,11 +58,7 @@ public class BitSetObjectMapTest {
 	}
 
 	private static BitSet bs(int... activeBits) {
-		BitSet bitSet = new BitSet();
-		for (int bit : activeBits) {
-			bitSet.set(bit);
-		}
-		return bitSet;
+		return BitSet.bits(5, activeBits);
 	}
 
 }

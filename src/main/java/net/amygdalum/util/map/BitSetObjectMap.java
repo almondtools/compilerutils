@@ -1,6 +1,6 @@
 package net.amygdalum.util.map;
 
-import java.util.BitSet;
+import net.amygdalum.util.bits.BitSet;
 
 public class BitSetObjectMap<T> extends TuneableMap {
 
@@ -146,30 +146,15 @@ public class BitSetObjectMap<T> extends TuneableMap {
 		if (keys.length > 0) {
 			BitSet key = keys[0];
 			T value = values[0];
-			buffer.append(toString(key)).append(": ").append(value);
+			buffer.append(key).append(": ").append(value);
 			
 		}
 		for (int i = 1; i < keys.length; i++) {
 			BitSet key = keys[i];
 			T value = values[0];
-			buffer.append(",\n").append(toString(key)).append(": ").append(value);
+			buffer.append(",\n").append(key).append(": ").append(value);
 		}
 		buffer.append("\n}");
-		return buffer.toString();
-	}
-
-	private String toString(BitSet bits) {
-		StringBuilder buffer = new StringBuilder();
-		for (int i = 0; i < bits.size(); i++) {
-			if (i / 4 > 0 && i % 4 == 0) {
-				buffer.append(' ');
-			}
-			if (bits.get(i)) {
-				buffer.append(1);
-			} else {
-				buffer.append(0);
-			}
-		}
 		return buffer.toString();
 	}
 
