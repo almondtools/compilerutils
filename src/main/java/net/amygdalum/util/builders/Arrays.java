@@ -31,14 +31,20 @@ public class Arrays<T> {
 		return this;
 	}
 
+	public Arrays<T> addAll(T[] items) {
+		for (T item : items) {
+			base.add(item);
+		}
+		return this;
+	}
+
 	public Arrays<T> addAll(List<T> items) {
 		base.addAll(items);
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
-	public T[] build() {
-		return (T[]) base.toArray();
+	public T[] build(T[] a) {
+		return base.toArray(a);
 	}
 
 }
