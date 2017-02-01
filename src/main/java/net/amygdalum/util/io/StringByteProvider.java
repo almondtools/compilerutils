@@ -136,8 +136,8 @@ public class StringByteProvider implements ByteProvider {
 		encoded.limit((int) end);
 		byte[] slice = new byte[(int) max(0, end - start)];
 		encoded.get(slice);
-		encoded.position(pos);
 		encoded.limit(limit);
+		encoded.position(pos);
 
 		return new ByteString(slice, charset);
 	}
