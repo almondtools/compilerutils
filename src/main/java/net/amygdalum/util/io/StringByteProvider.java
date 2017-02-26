@@ -30,6 +30,13 @@ public class StringByteProvider implements ByteProvider {
 		this.mark = NO_MARK;
 	}
 
+	public StringByteProvider(byte[] input, int start, Charset charset) {
+		this.encoded = ByteBuffer.wrap(input);
+		this.charset = charset;
+		this.encoded.position((int) start);
+		this.mark = NO_MARK;
+	}
+
 	private static ByteBuffer encode(Charset charset, String str) {
 		CharBuffer chars = CharBuffer.wrap(str);
 		CharsetEncoder encoder = charset.newEncoder();

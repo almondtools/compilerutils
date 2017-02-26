@@ -6,9 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import net.amygdalum.util.io.ReverseByteProvider;
-import net.amygdalum.util.io.StringByteProvider;
-
 public class ReverseByteProviderTest {
 
 	@Test
