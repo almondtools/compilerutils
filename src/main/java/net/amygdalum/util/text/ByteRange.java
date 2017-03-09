@@ -7,10 +7,15 @@ import java.util.List;
 
 public class ByteRange {
 
+	private static final int UNKNOWN = -1;
 	public int length;
 	public byte[] from;
 	public byte[] to;
 	private int size;
+
+	public ByteRange(byte[] from, byte[] to) {
+		this(from, to, UNKNOWN);
+	}
 
 	public ByteRange(byte[] from, byte[] to, int size) {
 		this.from = from;
@@ -19,11 +24,8 @@ public class ByteRange {
 		this.size = size;
 	}
 
-	private int lengthOf(byte[] from, byte[] to) {
-		if (from.length != to.length) {
-			throw new IllegalArgumentException();
-		}
-		return from.length;
+	public ByteRange(byte from, byte to) {
+		this(from, to, UNKNOWN);
 	}
 
 	public ByteRange(byte from, byte to, int size) {
@@ -31,6 +33,13 @@ public class ByteRange {
 		this.from = new byte[] { from };
 		this.to = new byte[] { to };
 		this.length = 1;
+	}
+
+	private int lengthOf(byte[] from, byte[] to) {
+		if (from.length != to.length) {
+			throw new IllegalArgumentException();
+		}
+		return from.length;
 	}
 
 	public boolean contains(byte... value) {
@@ -57,8 +66,10 @@ public class ByteRange {
 	}
 
 	public boolean ranges(byte[] from, byte[] to) {
-		return this.length == from.length && Arrays.equals(this.from, from)
-			&& this.length == to.length && Arrays.equals(this.to, to);
+		return this.length == from.length 
+			&& Arrays.equals(this.from, from)
+			&& this.length == to.length 
+			&& Arrays.equals(this.to, to);
 	}
 
 	public int size() {
@@ -73,8 +84,8 @@ public class ByteRange {
 			return asList(this);
 		} else {
 			return asList(
-				new ByteRange(from, before(value), -1),
-				new ByteRange(value, to, -1));
+				new ByteRange(from, before(value), UNKNOWN),
+				new ByteRange(value, to, UNKNOWN));
 		}
 	}
 
@@ -86,8 +97,8 @@ public class ByteRange {
 			return asList(this);
 		} else {
 			return asList(
-				new ByteRange(from, value, -1),
-				new ByteRange(after(value), to, -1));
+				new ByteRange(from, value, UNKNOWN),
+				new ByteRange(after(value), to, UNKNOWN));
 		}
 	}
 
@@ -101,17 +112,17 @@ public class ByteRange {
 			return asList(this);
 		} else if (fromStart) {
 			return asList(
-				new ByteRange(from, to, -1),
-				new ByteRange(after(to), this.to, -1));
+				new ByteRange(from, to, UNKNOWN),
+				new ByteRange(after(to), this.to, UNKNOWN));
 		} else if (toEnd) {
 			return asList(
-				new ByteRange(this.from, before(from), -1),
-				new ByteRange(from, to, -1));
+				new ByteRange(this.from, before(from), UNKNOWN),
+				new ByteRange(from, to, UNKNOWN));
 		} else {
 			return asList(
-				new ByteRange(this.from, before(from), -1),
-				new ByteRange(from, to, -1),
-				new ByteRange(after(to), this.to, -1));
+				new ByteRange(this.from, before(from), UNKNOWN),
+				new ByteRange(from, to, UNKNOWN),
+				new ByteRange(after(to), this.to, UNKNOWN));
 		}
 	}
 
@@ -125,17 +136,17 @@ public class ByteRange {
 			return asList(this);
 		} else if (fromStart) {
 			return asList(
-				new ByteRange(from, to, -1),
-				new ByteRange(after(to), this.to, -1));
+				new ByteRange(from, to, UNKNOWN),
+				new ByteRange(after(to), this.to, UNKNOWN));
 		} else if (toEnd) {
 			return asList(
-				new ByteRange(this.from, before(from), -1),
-				new ByteRange(from, to, -1));
+				new ByteRange(this.from, before(from), UNKNOWN),
+				new ByteRange(from, to, UNKNOWN));
 		} else {
 			return asList(
-				new ByteRange(this.from, before(from), -1),
-				new ByteRange(from, to, -1),
-				new ByteRange(after(to), this.to, -1));
+				new ByteRange(this.from, before(from), UNKNOWN),
+				new ByteRange(from, to, UNKNOWN),
+				new ByteRange(after(to), this.to, UNKNOWN));
 		}
 	}
 

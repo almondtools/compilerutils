@@ -21,7 +21,6 @@ public class CharRange {
 			&& value <= to;
 	}
 
-
 	public List<CharRange> splitBefore(char value) {
 		if (value == from) {
 			return asList(this);
