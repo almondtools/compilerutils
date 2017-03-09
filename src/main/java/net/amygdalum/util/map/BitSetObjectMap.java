@@ -1,5 +1,9 @@
 package net.amygdalum.util.map;
 
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import net.amygdalum.util.bits.BitSet;
 
 public class BitSetObjectMap<T> extends TuneableMap {
@@ -32,6 +36,14 @@ public class BitSetObjectMap<T> extends TuneableMap {
 		this.nullValue = defaultValue;
 	}
 
+	public int size() {
+		int size = this.size;
+		if (nullValue != defaultValue) {
+			size++;
+		}
+		return size;
+	}
+
 	public BitSet[] keys() {
 		int size = this.size;
 		if (nullValue != defaultValue) {
@@ -45,7 +57,7 @@ public class BitSetObjectMap<T> extends TuneableMap {
 				pos++;
 			}
 		}
-		if (nullValue != defaultValue && pos < keys.length) {
+		if (nullValue != defaultValue) {
 			keys[pos] = NULL_KEY;
 		}
 		return keys;
@@ -93,20 +105,24 @@ public class BitSetObjectMap<T> extends TuneableMap {
 	public T getDefaultValue() {
 		return defaultValue;
 	}
-	
+
+	public Iterable<Entry<T>> cursor() {
+		return new EntryIterable<T>(this);
+	}
+
 	@SuppressWarnings("unchecked")
 	private void expand(int size) {
 		int mask = mask(size, this.loadFactor);
-		
+
 		BitSet[] oldkeys = this.keys;
 		T[] oldvalues = this.values;
-		
+
 		BitSet[] keys = new BitSet[mask + 1];
 		T[] values = (T[]) new Object[mask + 1];
 
 		int[] delayed = new int[this.size];
 		int pos = 0;
-		
+
 		for (int i = 0; i < oldkeys.length; i++) {
 			BitSet key = oldkeys[i];
 			if (key != NULL_KEY && key != null) {
@@ -143,19 +159,111 @@ public class BitSetObjectMap<T> extends TuneableMap {
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("{\n");
-		if (keys.length > 0) {
-			BitSet key = keys[0];
-			T value = values[0];
-			buffer.append(key).append(": ").append(value);
-			
+		Iterator<Entry<T>> cursor = cursor().iterator();
+		if (cursor.hasNext()) {
+			Entry<T> entry = cursor.next();
+			buffer.append(entry.toString());
 		}
-		for (int i = 1; i < keys.length; i++) {
-			BitSet key = keys[i];
-			T value = values[0];
-			buffer.append(",\n").append(key).append(": ").append(value);
+		while (cursor.hasNext()) {
+			Entry<T> entry = cursor.next();
+			buffer.append(",\n").append(entry.toString());
 		}
 		buffer.append("\n}");
 		return buffer.toString();
+	}
+
+	public static class EntryIterable<T> implements Iterable<Entry<T>> {
+
+		private BitSetObjectMap<T> map;
+
+		public EntryIterable(BitSetObjectMap<T> map) {
+			this.map = map;
+		}
+
+		@Override
+		public Iterator<Entry<T>> iterator() {
+			return new EntryIterator<T>(map);
+		}
+	}
+
+	public static class EntryIterator<T> implements Iterator<Entry<T>> {
+
+		private BitSetObjectMap<T> map;
+		private int index;
+		private int currentKey;
+		private int fixedSize;
+		private Entry<T> entry;
+
+		public EntryIterator(BitSetObjectMap<T> map) {
+			this.map = map;
+			this.index = 0;
+			this.currentKey = -1;
+			this.fixedSize = map.size;
+			this.entry = new Entry<>();
+		}
+
+		@Override
+		public boolean hasNext() {
+			if (map.size != fixedSize) {
+				throw new ConcurrentModificationException();
+			}
+			return index < fixedSize || index == fixedSize && map.nullValue != map.defaultValue;
+		}
+
+		@Override
+		public Entry<T> next() {
+			if (map.size != fixedSize) {
+				throw new ConcurrentModificationException();
+			}
+			while (currentKey < map.keys.length - 1) {
+				currentKey++;
+				BitSet b = map.keys[currentKey];
+				if (b != NULL_KEY) {
+					entry.key = map.keys[currentKey];
+					entry.value = map.values[currentKey];
+					index++;
+					return entry;
+				}
+			}
+			if (map.nullValue != map.defaultValue) {
+				entry.key = NULL_KEY;
+				entry.value = map.nullValue;
+				index++;
+				return entry;
+			}
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public void remove() {
+			if (currentKey < 0) {
+				throw new NoSuchElementException();
+			}
+			if (map.keys[currentKey] != NULL_KEY) {
+				map.size--;
+			} else if (map.values[currentKey] != map.defaultValue) {
+				map.nullValue = map.defaultValue;
+			}
+			map.keys[currentKey] = NULL_KEY;
+			map.values[currentKey] = map.defaultValue;
+		}
+	}
+
+	public static class Entry<T> {
+
+		public BitSet key;
+		public T value;
+
+		@Override
+		public String toString() {
+			String keystr = key == null ? "null" : "0b" + key.toString();
+			return new StringBuilder()
+				.append(keystr)
+				.append(':')
+				.append(value)
+				.toString();
+		}
+
 	}
 
 }

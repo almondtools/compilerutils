@@ -57,7 +57,7 @@ public class CharObjectMap<T> extends TuneableMap {
 				pos++;
 			}
 		}
-		if (nullValue != defaultValue && pos < keys.length) {
+		if (nullValue != defaultValue) {
 			keys[pos] = NULL_KEY;
 		}
 		sort(keys);
@@ -160,16 +160,14 @@ public class CharObjectMap<T> extends TuneableMap {
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("{\n");
-		if (keys.length > 0) {
-			char key = keys[0];
-			T value = values[0];
-			buffer.append(key).append(": ").append(value);
-
+		Iterator<Entry<T>> cursor = cursor().iterator();
+		if (cursor.hasNext()) {
+			Entry<T> entry = cursor.next();
+			buffer.append(entry.toString());
 		}
-		for (int i = 1; i < keys.length; i++) {
-			char key = keys[i];
-			T value = values[i];
-			buffer.append(",\n").append(key).append(": ").append(value);
+		while (cursor.hasNext()) {
+			Entry<T> entry = cursor.next();
+			buffer.append(",\n").append(entry.toString());
 		}
 		buffer.append("\n}");
 		return buffer.toString();
@@ -204,7 +202,7 @@ public class CharObjectMap<T> extends TuneableMap {
 			this.fixedSize = map.size;
 			this.entry = new Entry<>();
 		}
-		
+
 		@Override
 		public boolean hasNext() {
 			if (map.size != fixedSize) {
@@ -239,8 +237,13 @@ public class CharObjectMap<T> extends TuneableMap {
 
 		@Override
 		public void remove() {
-			if (currentKey < 0 || currentKey >= map.keys.length) {
+			if (currentKey < 0) {
 				throw new NoSuchElementException();
+			}
+			if (map.keys[currentKey] != NULL_KEY) {
+				map.size--;
+			} else if (map.values[currentKey] != map.defaultValue) {
+				map.nullValue = map.defaultValue;
 			}
 			map.keys[currentKey] = NULL_KEY;
 			map.values[currentKey] = map.defaultValue;
@@ -251,6 +254,16 @@ public class CharObjectMap<T> extends TuneableMap {
 
 		public char key;
 		public T value;
+
+		@Override
+		public String toString() {
+			String keystr = "'" + key + "'";
+			return new StringBuilder()
+				.append(keystr)
+				.append(':')
+				.append(value)
+				.toString();
+		}
 
 	}
 

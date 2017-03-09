@@ -1,5 +1,6 @@
 package net.amygdalum.util.bits;
 
+import static com.almondtools.conmatch.conventions.EqualityMatcher.satisfiesDefaultEquality;
 import static net.amygdalum.util.bits.BitSet.all;
 import static net.amygdalum.util.bits.BitSet.bits;
 import static net.amygdalum.util.bits.BitSet.empty;
@@ -12,6 +13,17 @@ import org.junit.Test;
 
 public class BitSetTest {
 
+	@Test
+	public void testBitSet() throws Exception {
+		assertThat(BitSet.bits(64, 7), satisfiesDefaultEquality()
+			.andEqualTo(BitSet.bits(64, 7))
+			.andNotEqualTo(BitSet.bits(64, 8))
+			.andNotEqualTo(BitSet.bits(63, 7))
+			.andNotEqualTo(BitSet.bits(63, 8))
+			.andNotEqualTo(BitSet.bits(64, 7, 2))
+			.andNotEqualTo(BitSet.bits(64))
+			.includingToString());
+	}
 	@Test
 	public void testNextSetBit64() throws Exception {
 		BitSet bits = BitSet.bits(64, 3, 5, 33, 55, 63);

@@ -1,6 +1,6 @@
 package net.amygdalum.util.map;
 
-public class TuneableMap {
+public abstract class TuneableMap {
 
 	public static final int DEFAULT_SIZE = 16;
 	public static final float DEFAULT_LOAD = 0.7f;
@@ -28,12 +28,12 @@ public class TuneableMap {
 		}
 	}
 
-	public static int hash(int key) {
+	public int hash(int key) {
 		int h = key * INT_PHI;
 		return h ^ (h >> 16);
 	}
 
-	public static int hash(long key) {
+	public int hash(long key) {
 		long h = key * LONG_PHI;
 		h ^= h >> 32;
 		return (int) (h ^ (h >> 16));

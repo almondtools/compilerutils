@@ -1,5 +1,9 @@
 package net.amygdalum.util.map;
 
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 public class CharLongMap extends TuneableMap {
 
 	private static final char NULL_KEY = 0;
@@ -29,6 +33,14 @@ public class CharLongMap extends TuneableMap {
 		this.nullValue = defaultValue;
 	}
 
+	public int size() {
+		int size = this.size;
+		if (nullValue != defaultValue) {
+			size++;
+		}
+		return size;
+	}
+
 	public char[] keys() {
 		int size = this.size;
 		if (nullValue != defaultValue) {
@@ -42,7 +54,7 @@ public class CharLongMap extends TuneableMap {
 				pos++;
 			}
 		}
-		if (nullValue != defaultValue && pos < keys.length) {
+		if (nullValue != defaultValue) {
 			keys[pos] = NULL_KEY;
 		}
 		return keys;
@@ -89,6 +101,10 @@ public class CharLongMap extends TuneableMap {
 
 	public long getDefaultValue() {
 		return defaultValue;
+	}
+
+	public Iterable<Entry> cursor() {
+		return new EntryIterable(this);
 	}
 
 	private void expand(int size) {
@@ -139,18 +155,111 @@ public class CharLongMap extends TuneableMap {
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("{\n");
-		if (keys.length > 0) {
-			char key = keys[0];
-			long value = values[0];
-			buffer.append(key).append(": ").append(value);
-
+		Iterator<Entry> cursor = cursor().iterator();
+		if (cursor.hasNext()) {
+			Entry entry = cursor.next();
+			buffer.append(entry.toString());
 		}
-		for (int i = 1; i < keys.length; i++) {
-			char key = keys[i];
-			long value = values[0];
-			buffer.append(",\n").append(key).append(": ").append(value);
+		while (cursor.hasNext()) {
+			Entry entry = cursor.next();
+			buffer.append(",\n").append(entry.toString());
 		}
 		buffer.append("\n}");
 		return buffer.toString();
 	}
+
+	public static class EntryIterable implements Iterable<Entry> {
+
+		private CharLongMap map;
+
+		public EntryIterable(CharLongMap map) {
+			this.map = map;
+		}
+
+		@Override
+		public Iterator<Entry> iterator() {
+			return new EntryIterator(map);
+		}
+	}
+
+	public static class EntryIterator implements Iterator<Entry> {
+
+		private CharLongMap map;
+		private int index;
+		private int currentKey;
+		private int fixedSize;
+		private Entry entry;
+
+		public EntryIterator(CharLongMap map) {
+			this.map = map;
+			this.index = 0;
+			this.currentKey = -1;
+			this.fixedSize = map.size;
+			this.entry = new Entry();
+		}
+
+		@Override
+		public boolean hasNext() {
+			if (map.size != fixedSize) {
+				throw new ConcurrentModificationException();
+			}
+			return index < fixedSize || index == fixedSize && map.nullValue != map.defaultValue;
+		}
+
+		@Override
+		public Entry next() {
+			if (map.size != fixedSize) {
+				throw new ConcurrentModificationException();
+			}
+			while (currentKey < map.keys.length - 1) {
+				currentKey++;
+				char c = map.keys[currentKey];
+				if (c != NULL_KEY) {
+					entry.key = map.keys[currentKey];
+					entry.value = map.values[currentKey];
+					index++;
+					return entry;
+				}
+			}
+			if (map.nullValue != map.defaultValue) {
+				entry.key = NULL_KEY;
+				entry.value = map.nullValue;
+				index++;
+				return entry;
+			}
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public void remove() {
+			if (currentKey < 0) {
+				throw new NoSuchElementException();
+			}
+			if (map.keys[currentKey] != NULL_KEY) {
+				map.size--;
+			} else if (map.values[currentKey] != map.defaultValue) {
+				map.nullValue = map.defaultValue;
+			}
+			map.keys[currentKey] = NULL_KEY;
+			map.values[currentKey] = map.defaultValue;
+		}
+	}
+
+	public static class Entry {
+
+		public char key;
+		public long value;
+
+		@Override
+		public String toString() {
+			String keystr = "'" + key + "'";
+			return new StringBuilder()
+				.append(keystr)
+				.append(':')
+				.append(value)
+				.toString();
+		}
+
+	}
+
 }
