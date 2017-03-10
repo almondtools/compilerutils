@@ -38,7 +38,7 @@ public class CharAlphabet {
 	}
 
 	public int getRange() {
-		if (maxChar <= minChar) {
+		if (maxChar < minChar) {
 			return 0;
 		}
 		return maxChar - minChar + 1;

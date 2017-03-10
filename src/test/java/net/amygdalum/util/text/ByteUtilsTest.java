@@ -21,7 +21,9 @@ public class ByteUtilsTest {
 	@Test
 	public void testMinMaxLength() throws Exception {
 		assertThat(minLength(asList(new byte[] { 1, 2 }, new byte[] { 1, 2, 3 })), equalTo(2));
-		assertThat(maxLength(asList(new byte[] { 1, 2 }, new byte[] { 1, 2, 3 })), equalTo(3));
+        assertThat(minLength(asList(new byte[] { 1, 2, 3 }, new byte[] { 1, 2 })), equalTo(2));
+        assertThat(maxLength(asList(new byte[] { 1, 2 }, new byte[] { 1, 2, 3 })), equalTo(3));
+		assertThat(maxLength(asList(new byte[] { 1, 2, 3 }, new byte[] { 1, 2 })), equalTo(3));
 	}
 
 	@Test

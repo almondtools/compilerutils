@@ -10,6 +10,8 @@ public class CharAlphabetTest {
 	@Test
 	public void testRanged() throws Exception {
 		assertThat(CharAlphabet.ranged("abcba".toCharArray()).getRange(), equalTo(3));
+        assertThat(CharAlphabet.ranged("a".toCharArray()).getRange(), equalTo(1));
+        assertThat(CharAlphabet.ranged(new char[0]).getRange(), equalTo(0));
 		assertThat(CharAlphabet.ranged("abcba".toCharArray()).minChar(), equalTo('a'));
 		assertThat(CharAlphabet.ranged("abcba".toCharArray()).maxChar(), equalTo('c'));
 	}
