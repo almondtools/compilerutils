@@ -37,7 +37,7 @@ public class ByteStringTest {
     public void testLength() throws Exception {
         assertThat(new ByteString("abc".getBytes(), UTF_8).length(), equalTo(3));
         assertThat(new ByteString("abcd".getBytes(), UTF_8).length(), equalTo(4));
-        assertThat(new ByteString("öäü_oau".getBytes(), UTF_8).length(), equalTo(10));
+        assertThat(new ByteString("öäü_oau".getBytes(UTF_8), UTF_8).length(), equalTo(10));
         assertThat(new ByteString("abc".getBytes(UTF_16), UTF_16).length(), equalTo(8));
         assertThat(new ByteString("abc".getBytes(UTF_16LE), UTF_16LE).length(), equalTo(6));
     }
