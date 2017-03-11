@@ -12,6 +12,16 @@ public final class CharUtils {
 	private CharUtils() {
 	}
 
+    public static char[] fromWrapped(Collection<Character> charlist) {
+        char[] chars = new char[charlist.size()];
+        int i = 0;
+        for (Character c : charlist) {
+            chars[i] = c.charValue();
+            i++;
+        }
+        return chars;
+    }
+
 	public static char[] revert(char[] chars) {
 		final int ri = chars.length - 1;
 		char[] reversechars = new char[chars.length];
