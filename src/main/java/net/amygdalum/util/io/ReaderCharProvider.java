@@ -18,6 +18,22 @@ public class ReaderCharProvider implements CharProvider {
 	private long absolutePos;
 	private long mark;
 
+	/**
+	 * provides an reader as char sequence. Buffering is done with an array of chars.
+	 * 
+	 * A reader could possibly contain more chars than main memory can hold, so chars that where already read
+	 * are discarded after some time. You can specify the size of one chunk of the reader and the number of buffers
+	 * that should remain in main memory.
+	 * 
+	 * Since many algorithms search backwards from the current position it may be essential that already proceeded
+	 * chunks are preserved a while. In general a search word should fit into the current chunk + the lookaround buffers.
+	 * Yet the least problems occur if the chunk size is chosen large enough to hold any search word.
+	 * 
+	 * @param input the source reader
+	 * @param start the position to start from
+	 * @param chunk the size of one chunk to search in
+	 * @param lookaroundBuffers number of chunks around the current chunk that are searchable
+	 */
 	public ReaderCharProvider(Reader input, long start, int chunk, int lookaroundBuffers) {
 		this.input = input;
 		this.bufferSize = chunk;

@@ -8,6 +8,11 @@ public class StringCharProvider implements CharProvider {
 	private int pos;
 	private int mark;
 
+	/**
+	 * provides a string as char sequence.
+	 * @param input the string
+	 * @param start the position to start from
+	 */
 	public StringCharProvider(String input, int start) {
 		this.input = input;
 		this.pos = start;

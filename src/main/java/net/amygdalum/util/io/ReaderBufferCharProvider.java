@@ -18,6 +18,22 @@ public class ReaderBufferCharProvider implements CharProvider {
 
 	private int state;
 
+	/**
+	 * provides an reader as char sequence. Uses a {@link CharBuffer} for encoding/decoding.
+	 * 
+	 * A reader could possibly contain more chars than main memory can hold, so chars that where already read
+	 * are discarded after some time. You can specify the size of one buffer of the reader and the number of buffers
+	 * that should remain in main memory.
+	 * 
+	 * Since many algorithms search backwards from the current position it may be essential that already proceeded
+	 * chunks are preserved a while. In general a search word should fit into the current buffer + the reverse buffers.
+	 * Yet the least problems occur if the chunk size is chosen large enough to hold any search word.
+	 * 
+	 * @param input the source reader
+	 * @param start the position to start from
+	 * @param buffer the size of the buffer
+	 * @param reverseBuffers the number of buffers for looking back
+	 */
 	public ReaderBufferCharProvider(Reader input, long start, int buffer, int reverseBuffers) {
 		this.input = input;
 		this.chunk = buffer;

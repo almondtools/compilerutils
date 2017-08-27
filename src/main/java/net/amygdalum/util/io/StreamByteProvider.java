@@ -24,10 +24,37 @@ public class StreamByteProvider implements ByteProvider {
 	private long absolutePos;
 	private long mark;
 
+	/**
+	 * provides an input stream as byte sequence. Uses UTF_16LE as CharSet for encoding/decoding.
+	 * 
+	 * further description of the arguments are found in @link {@link #StreamByteProvider(InputStream, CharSet, long, int, int)}
+	 * 
+	 * @param input the source input stream
+	 * @param start the position to start from
+	 * @param chunk the size of one buffer to search in
+	 * @param lookaroundBuffers number of chunks around the current chunk that are searchable
+	 */
 	public StreamByteProvider(InputStream input, long start, int chunk, int lookaroundBuffers) {
 		this(input, UTF_16LE, start, chunk, lookaroundBuffers);
 	}
 
+	/**
+	 * provides an input stream as byte sequence.
+	 * 
+	 * A stream could possibly contain more bytes than main memory can hold, so bytes that where already read
+	 * are discarded after some time. You can specify the size of one chunk of the stream and the number of chunks
+	 * that should remain in main memory.
+	 * 
+	 * Since many algorithms search backwards from the current position it may be essential that already proceeded
+	 * chunks are preserved a while. In general a search word should fit into the current chunk + the lookaround chunks.
+	 * Yet the least problems occur if the chunk size is chosen large enough to hold any search word.
+	 * 
+	 * @param input the source input stream
+	 * @param charset the charset to use for encoding/decoding
+	 * @param start the position to start from
+	 * @param chunk the size of one buffer to search in
+	 * @param lookaroundBuffers number of chunks around the current chunk that are searchable
+	 */
 	public StreamByteProvider(InputStream input, Charset charset, long start, int chunk, int lookaroundBuffers) {
 		this.input = input;
 		this.charset = charset;

@@ -6,6 +6,11 @@ public class ReverseByteProvider implements ByteProvider {
 
 	private ByteProvider bytes;
 
+	/**
+	 * provides a sequence of bytes by reverting another sequence of bytes.
+	 * 
+	 * @param bytes the source sequence
+	 */
 	public ReverseByteProvider(ByteProvider bytes) {
 		this.bytes = bytes;
 	}

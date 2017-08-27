@@ -5,6 +5,11 @@ public class ReverseCharProvider implements CharProvider {
 
 	private CharProvider chars;
 
+	/**
+	 * provides a sequence of chars by reverting another sequence of chars.
+	 * 
+	 * @param chars the source sequence
+	 */
 	public ReverseCharProvider(CharProvider chars) {
 		this.chars = chars;
 	}

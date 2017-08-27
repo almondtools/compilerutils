@@ -19,10 +19,21 @@ public class StringByteProvider implements ByteProvider {
 	private ByteBuffer encoded;
 	private int mark;
 
+	/**
+	 * provides a string as byte sequence. Uses UTF_16LE as CharSet for encoding/decoding.
+	 * @param input the string
+	 * @param start position to start from
+	 */
 	public StringByteProvider(String input, int start) {
 		this(input, start, UTF_16LE);
 	}
 
+	/**
+	 * provides a string as byte sequence with given CharSet.
+	 * @param input the string
+	 * @param start position to start from
+	 * @param charset the given charset to use for encoding/decoding
+	 */
 	public StringByteProvider(String input, int start, Charset charset) {
 		this.encoded = encode(charset, input);
 		this.charset = charset;
@@ -30,6 +41,12 @@ public class StringByteProvider implements ByteProvider {
 		this.mark = NO_MARK;
 	}
 
+	/**
+	 * provides a string as byte sequence with given CharSet.
+	 * @param input the string
+	 * @param start position to start from
+	 * @param charset the given charset to use for converting back to String
+	 */
 	public StringByteProvider(byte[] input, int start, Charset charset) {
 		this.encoded = ByteBuffer.wrap(input);
 		this.charset = charset;
