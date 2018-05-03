@@ -1,6 +1,7 @@
 package net.amygdalum.util.bits;
 
 import static com.almondtools.conmatch.conventions.EqualityMatcher.satisfiesDefaultEquality;
+import static com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher.intArrayContaining;
 import static net.amygdalum.util.bits.BitSet.all;
 import static net.amygdalum.util.bits.BitSet.bits;
 import static net.amygdalum.util.bits.BitSet.empty;
@@ -33,6 +34,8 @@ public class BitSetTest {
         BitSet all = BitSet.all(64);
         assertThat(all.nextSetBit(0), equalTo(0));
         assertThat(all.nextClearBit(0), equalTo(-1));
+        assertThat(all.allSetBits().length, equalTo(64));
+        assertThat(all.allClearBits().length, equalTo(0));
     }
 
     @Test
@@ -40,6 +43,8 @@ public class BitSetTest {
         BitSet all = BitSet.empty(64);
         assertThat(all.nextSetBit(0), equalTo(-1));
         assertThat(all.nextClearBit(0), equalTo(0));
+        assertThat(all.allSetBits().length, equalTo(0));
+        assertThat(all.allClearBits().length, equalTo(64));
     }
 
     @Test
@@ -59,6 +64,13 @@ public class BitSetTest {
     }
 
     @Test
+    public void testAllSetBits64() throws Exception {
+        BitSet bits = BitSet.bits(64, 3, 5, 33, 55, 63);
+        assertThat(bits.allSetBits(), intArrayContaining(3, 5, 33, 55, 63));
+        assertThat(bits.not().allClearBits(), intArrayContaining(3, 5, 33, 55, 63));
+    }
+
+    @Test
     public void testNextSetBit128() throws Exception {
         BitSet bits = BitSet.bits(128, 3, 5, 33, 55, 78, 127);
         assertThat(bits.nextSetBit(0), equalTo(3));
@@ -74,6 +86,13 @@ public class BitSetTest {
         assertThat(bits.nextSetBit(79), equalTo(127));
         assertThat(bits.nextSetBit(127), equalTo(127));
         assertThat(bits.nextSetBit(128), equalTo(-1));
+    }
+
+    @Test
+    public void testAllSetBit128() throws Exception {
+        BitSet bits = BitSet.bits(128, 3, 5, 33, 55, 78, 127);
+        assertThat(bits.allSetBits(), intArrayContaining(3, 5, 33, 55, 78, 127));
+        assertThat(bits.not().allClearBits(), intArrayContaining(3, 5, 33, 55, 78, 127));
     }
 
     @Test
