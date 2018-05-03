@@ -27,7 +27,7 @@ public class StreamByteProvider implements ByteProvider {
 	/**
 	 * provides an input stream as byte sequence. Uses UTF_16LE as CharSet for encoding/decoding.
 	 * 
-	 * further description of the arguments are found in @link {@link #StreamByteProvider(InputStream, CharSet, long, int, int)}
+	 * further description of the arguments are found in @link {@link #StreamByteProvider(InputStream, Charset, long, int, int)}
 	 * 
 	 * @param input the source input stream
 	 * @param start the position to start from
