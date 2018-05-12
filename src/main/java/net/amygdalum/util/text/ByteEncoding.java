@@ -13,16 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.amygdalum.util.builders.ArrayLists;
-import net.amygdalum.util.builders.HashMaps;
+import net.amygdalum.util.builders.Lists;
+import net.amygdalum.util.builders.Maps;
 
 public final class ByteEncoding {
 
 	private static final Map<Charset, List<ByteRange>> partitionings = initPartitionings();
 
 	private static Map<Charset, List<ByteRange>> initPartitionings() {
-		return HashMaps.<Charset, List<ByteRange>> hashed()
-			.put(UTF_8, ArrayLists.<ByteRange> list()
+		return Maps.<Charset, List<ByteRange>> hashed()
+			.put(UTF_8, Lists.<ByteRange> list()
 				.add(new ByteRange((byte) 0b0, (byte) 0b0111_1111, 128))
 				.add(new ByteRange(new byte[]{(byte) 0b1100_0010, (byte) 0b1000_0000}, new byte[]{(byte) 0b1101_1111, (byte) 0b1011_1111}, 1920))
 				.add(new ByteRange(new byte[]{(byte) 0b1110_0000, (byte) 0b1010_0000, (byte) 0b1000_0000}, new byte[]{(byte) 0b1110_1111, (byte) 0b1011_1111, (byte) 0b1011_1111}, 63488))

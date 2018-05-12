@@ -5,14 +5,14 @@ import static java.lang.Character.MIN_VALUE;
 
 import java.util.List;
 
-import net.amygdalum.util.builders.ArrayLists;
+import net.amygdalum.util.builders.Lists;
 
 public class CharRangeAccumulator {
 
 	private List<CharRange> ranges;
 
 	public CharRangeAccumulator() {
-		ranges = ArrayLists.of(new CharRange(MIN_VALUE, MAX_VALUE));
+		ranges = Lists.of(new CharRange(MIN_VALUE, MAX_VALUE));
 	}
 
 	public List<CharRange> getRanges() {
@@ -32,7 +32,7 @@ public class CharRangeAccumulator {
 		}
 	}
 
-	public int replace(int i, List<CharRange> replacement) {
+	private int replace(int i, List<CharRange> replacement) {
 		ranges.remove(i);
 		ranges.addAll(i, replacement);
 		return i + replacement.size() - 1;

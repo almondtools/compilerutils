@@ -1,7 +1,5 @@
 package net.amygdalum.util.io;
 
-import java.util.List;
-
 public interface CharClassMapper {
 
 	int getIndex(char ch);
@@ -11,8 +9,6 @@ public interface CharClassMapper {
 	char representative(int i);
 
 	char representative(char ch);
-
-	String representatives(List<Integer> path);
 
 	char[] representatives();
 

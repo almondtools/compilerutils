@@ -1,5 +1,6 @@
 package net.amygdalum.util.io;
 
+import static com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher.charArrayContaining;
 import static java.lang.Character.MAX_VALUE;
 import static java.lang.Character.MIN_VALUE;
 import static java.util.Arrays.asList;
@@ -92,6 +93,21 @@ public class BitMaskCharClassMapperTest {
 		assertThat(mapper.representative(0), equalTo(MIN_VALUE));
 		assertThat(mapper.representative(1), equalTo('5'));
 		assertThat(mapper.representative(2), equalTo(after('a')));
+	}
+
+	@Test
+	public void testRepresentatives() throws Exception {
+		BitMaskCharClassMapper mapper = new BitMaskCharClassMapper(asList(new CharRange('5', before('a')), new CharRange('b', 'ä')));
+		
+		assertThat(mapper.representatives(), charArrayContaining(MIN_VALUE, '5','b'));
+		
+		assertThat(mapper.representative('5'), equalTo('5'));
+		assertThat(mapper.representative(before('a')), equalTo('5'));
+		
+		assertThat(mapper.representative('a'), equalTo(MIN_VALUE));
+		
+		assertThat(mapper.representative('b'), equalTo('b'));
+		assertThat(mapper.representative('ä'), equalTo('b'));
 	}
 
 }

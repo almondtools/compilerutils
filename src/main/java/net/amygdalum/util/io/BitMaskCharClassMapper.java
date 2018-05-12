@@ -130,16 +130,4 @@ public final class BitMaskCharClassMapper implements CharClassMapper {
 		return chars;
 	}
 
-	@Override
-	public String representatives(List<Integer> indexes) {
-		if (indexes == null) {
-			return null;
-		}
-		StringBuilder buffer = new StringBuilder();
-		for (Integer i : indexes) {
-			buffer.append(chars[i]);
-		}
-		return buffer.toString();
-	}
-
 }
