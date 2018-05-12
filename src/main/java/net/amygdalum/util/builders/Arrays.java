@@ -3,7 +3,7 @@ package net.amygdalum.util.builders;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Arrays<T> {
+public final class Arrays<T> {
 
 	private List<T> base;
 

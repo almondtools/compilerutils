@@ -12,9 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import net.amygdalum.util.io.OutOfBufferException;
-import net.amygdalum.util.io.StreamByteProvider;
-
 public class StreamByteProviderTest {
 
 	private static final byte a = (byte) 'a';

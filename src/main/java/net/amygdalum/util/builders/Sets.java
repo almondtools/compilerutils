@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class Sets<T> {
+public final class Sets<T> {
 
 	private Set<T> set;
 

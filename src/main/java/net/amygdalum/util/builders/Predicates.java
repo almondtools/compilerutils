@@ -1,7 +1,7 @@
 package net.amygdalum.util.builders;
 
 
-public class Predicates {
+public final class Predicates {
 
 	public static <T> Predicate<T> all(final Class<T> clazz) {
 		return new Predicate<T>() {

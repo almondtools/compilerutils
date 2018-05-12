@@ -1,7 +1,5 @@
 package net.amygdalum.util.graph;
 
-import net.amygdalum.util.graph.Graph;
-
 public class GraphSamples {
 
 	public static Graph<String> createGraph() {

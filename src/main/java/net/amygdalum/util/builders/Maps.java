@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Maps<K,V> {
+public final class Maps<K,V> {
 
 	private Map<K,V> map;
 
@@ -16,17 +16,17 @@ public class Maps<K,V> {
 		}
 	}
 
-	public Maps<K,V> put(K key, V value) {
-		map.put(key, value);
-		return this;
-	}
-
 	public static <K,V> Maps<K, V> linked() {
 		return new Maps<K,V>(true);
 	}
 
 	public static <K,V> Maps<K, V> hashed() {
 		return new Maps<K,V>(false);
+	}
+
+	public Maps<K,V> put(K key, V value) {
+		map.put(key, value);
+		return this;
 	}
 
 	public static <K,V> Maps<K, V> invert(Map<V, K> toinvert) {

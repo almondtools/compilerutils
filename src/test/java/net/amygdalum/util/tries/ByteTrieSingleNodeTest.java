@@ -2,7 +2,7 @@ package net.amygdalum.util.tries;
 
 import static com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher.byteArrayContaining;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -108,6 +108,16 @@ public class ByteTrieSingleNodeTest {
 	@Test
 	public void testProxyGetAlternatives() throws Exception {
 		assertThat(defaultNode("chars").nextNode((byte) 'c').getAlternatives(), byteArrayContaining((byte) 'h'));
+	}
+	
+	@Test
+	public void testLink() throws Exception {
+		ByteTrieSingleNode<String> node = new ByteTrieSingleNode<String>("chars".getBytes(UTF_8), "chars");
+		ByteTrieNode<String> link = new ByteTrieSingleNode<String>("other".getBytes(UTF_8), "other");
+
+		node.link(link);
+
+		assertThat(node.getLink(), equalTo(link));
 	}
 	
 	private ByteTrieSingleNode<String> defaultNode(String string) {

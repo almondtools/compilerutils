@@ -12,7 +12,6 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import net.amygdalum.util.io.LowByteCharClassMapper;
 import net.amygdalum.util.text.CharRange;
 
 public class LowByteCharClassMapperTest {

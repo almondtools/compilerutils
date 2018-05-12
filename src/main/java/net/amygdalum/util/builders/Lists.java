@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class Lists<T> {
+public final class Lists<T> {
 
 	private List<T> list;
 

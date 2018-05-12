@@ -1,8 +1,8 @@
 package net.amygdalum.util.tries;
 
 import static com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher.charArrayContaining;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -37,6 +37,16 @@ public class CharTrieTerminalNodeTest {
 	@Test
 	public void testGetAlternatives() throws Exception {
 		assertThat(new CharTrieTerminalNode<>("attached").getAlternatives(), charArrayContaining());
+	}
+
+	@Test
+	public void testLink() throws Exception {
+		CharTrieTerminalNode<String> node = new CharTrieTerminalNode<String>("chars");
+		CharTrieNode<String> link = new CharTrieSingleNode<String>("other".toCharArray(), "other");
+
+		node.link(link);
+
+		assertThat(node.getLink(), equalTo(link));
 	}
 
 }

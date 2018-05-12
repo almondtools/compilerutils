@@ -10,9 +10,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import net.amygdalum.util.io.OutOfBufferException;
-import net.amygdalum.util.io.ReaderCharProvider;
-
 public class ReaderCharProviderTest {
 
 	@Rule

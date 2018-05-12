@@ -7,10 +7,6 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import net.amygdalum.util.graph.Graph;
-import net.amygdalum.util.graph.GraphNode;
-import net.amygdalum.util.graph.ReversePostOrderWorklistTraversal;
-
 
 public class ReversePostOrderWorklistTraversalTest {
 

@@ -1,6 +1,6 @@
 package net.amygdalum.util.builders;
 
-public class PrimitiveArrays<T> {
+public final class PrimitiveArrays<T> {
 
     private PrimitiveArrays() {
     }

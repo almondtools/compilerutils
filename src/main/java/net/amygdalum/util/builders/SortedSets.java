@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class SortedSets<T> {
+public final class SortedSets<T> {
 
 	private SortedSet<T> set;
 

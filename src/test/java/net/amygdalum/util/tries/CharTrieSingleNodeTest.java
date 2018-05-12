@@ -1,7 +1,7 @@
 package net.amygdalum.util.tries;
 
 import static com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher.charArrayContaining;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -109,6 +109,16 @@ public class CharTrieSingleNodeTest {
 		assertThat(defaultNode("chars").nextNode('c').getAlternatives(), charArrayContaining('h'));
 	}
 	
+	@Test
+	public void testLink() throws Exception {
+		CharTrieSingleNode<String> node = new CharTrieSingleNode<String>("chars".toCharArray(), "chars");
+		CharTrieNode<String> link = new CharTrieSingleNode<String>("other".toCharArray(), "other");
+
+		node.link(link);
+
+		assertThat(node.getLink(), equalTo(link));
+	}
+
 	private CharTrieSingleNode<String> defaultNode(String string) {
 		return new CharTrieSingleNode<>(string.toCharArray(), string);
 	}
