@@ -2,7 +2,6 @@ package net.amygdalum.util.builders;
 
 import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -44,7 +43,7 @@ public final class SortedSets<T> {
 
 	@SafeVarargs
 	public static <T> SortedSet<T> of(T... elements) {
-		return new TreeSet<T>(Arrays.asList(elements));
+		return new TreeSet<T>(asList(elements));
 	}
 
 	@SafeVarargs
@@ -101,7 +100,7 @@ public final class SortedSets<T> {
 
 	@SuppressWarnings("unchecked")
 	public SortedSets<T> addAll(T... add) {
-		set.addAll(Arrays.asList(add));
+		set.addAll(asList(add));
 		return this;
 	}
 
@@ -128,7 +127,7 @@ public final class SortedSets<T> {
 
 	@SuppressWarnings("unchecked")
 	public SortedSets<T> removeAll(T... remove) {
-		set.removeAll(Arrays.asList(remove));
+		set.removeAll(asList(remove));
 		return this;
 	}
 
@@ -159,7 +158,7 @@ public final class SortedSets<T> {
 
 	@SuppressWarnings("unchecked")
 	public SortedSets<T> retainAll(T... retain) {
-		set.retainAll(Arrays.asList(retain));
+		set.retainAll(asList(retain));
 		return this;
 	}
 

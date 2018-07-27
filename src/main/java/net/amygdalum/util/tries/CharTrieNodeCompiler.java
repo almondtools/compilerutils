@@ -86,7 +86,7 @@ public class CharTrieNodeCompiler<T> {
 
 	private CharTrieNode<T> createNode(CharObjectMap<CharTrieNode<T>> nexts, T attached) {
 		if (isQualifiedForLeafNode(nexts)) {
-			return createTrieLeafNode(nexts, attached);
+			return createTrieLeafNode(attached);
 		} else if (isQualifiedForSingleNode(nexts)) {
 			return createTrieSingleNode(nexts, attached);
 		} else if (isQualifiedForArrayNode(nexts)) {
@@ -100,7 +100,7 @@ public class CharTrieNodeCompiler<T> {
 		return nexts.size() == 0;
 	}
 
-	private CharTrieNode<T> createTrieLeafNode(CharObjectMap<CharTrieNode<T>> nexts, T attached) {
+	private CharTrieNode<T> createTrieLeafNode(T attached) {
 		return new CharTrieTerminalNode<T>(attached);
 	}
 

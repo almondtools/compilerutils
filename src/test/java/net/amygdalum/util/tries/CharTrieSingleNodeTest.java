@@ -1,11 +1,10 @@
 package net.amygdalum.util.tries;
 
 import static com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher.charArrayContaining;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -124,7 +123,7 @@ public class CharTrieSingleNodeTest {
 	}
 
 	private CharTrieSingleNode<String> multiNode(String... strings) {
-		char[] chars = StringUtils.join(Arrays.asList(strings)).toCharArray();
+		char[] chars = StringUtils.join(asList(strings)).toCharArray();
 		String[] attached = new String[chars.length + 1];
 		int pos = 0;
 		String acc = "";

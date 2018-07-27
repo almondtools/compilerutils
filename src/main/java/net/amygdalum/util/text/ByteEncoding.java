@@ -34,13 +34,13 @@ public final class ByteEncoding {
 	public static List<ByteRange> getPartitioningFor(Charset charset) {
 		List<ByteRange> part = partitionings.get(charset);
 		if (part == null) {
-			part = bruteForce(charset);
+			part = bruteForce();
 			partitionings.put(charset, part);
 		}
 		return part;
 	}
 
-	private static List<ByteRange> bruteForce(Charset charset) {
+	private static List<ByteRange> bruteForce() {
 		List<ByteRange> ranges = new ArrayList<>();
 		byte[] start = null;
 		int size = 0;

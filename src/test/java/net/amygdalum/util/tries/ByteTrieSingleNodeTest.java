@@ -2,11 +2,10 @@ package net.amygdalum.util.tries;
 
 import static com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher.byteArrayContaining;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -125,7 +124,7 @@ public class ByteTrieSingleNodeTest {
 	}
 
 	private ByteTrieSingleNode<String> multiNode(String... strings) {
-		byte[] bytes = StringUtils.join(Arrays.asList(strings)).getBytes(UTF_8);
+		byte[] bytes = StringUtils.join(asList(strings)).getBytes(UTF_8);
 		String[] attached = new String[bytes.length + 1];
 		int pos = 0;
 		String acc = "";

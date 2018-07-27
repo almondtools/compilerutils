@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,8 +20,6 @@ public class StreamByteProviderTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-
-	InputStream I;
 
 	@Test
 	public void testNextAtBeginning() throws Exception {
@@ -80,7 +77,10 @@ public class StreamByteProviderTest {
 	public void testPrevConsumesWithSmallBuffer() throws Exception {
 		StreamByteProvider provider = new StreamByteProvider(new ByteArrayInputStream("abcd".getBytes(UTF_8)), 4, 1, 2);
 		provider.prev();
+
 		provider.prev();
+
+		assertThat(provider.lookahead(), equalTo(c));
 	}
 
 	@Test

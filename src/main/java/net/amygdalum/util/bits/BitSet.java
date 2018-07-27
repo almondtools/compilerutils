@@ -5,15 +5,20 @@ import java.util.Arrays;
 public class BitSet implements Cloneable {
 
 	private final int size;
-	private final int lastsize;
 	private final long lastmask;
 	private long[] bits;
 
 	private BitSet(int size, long[] bits) {
 		this.size = size;
-		this.lastsize = ((size - 1) % 64) + 1;
-		this.lastmask = lastsize == 64 ? 0xffff_ffff_ffff_ffffl : (1l << lastsize) - 1;
+		this.lastmask = computeMask(size);
 		this.bits = bits;
+	}
+
+	private static final long computeMask(int size) {
+		int lastsize = ((size - 1) % 64) + 1;
+		return lastsize == 64
+			? 0xffff_ffff_ffff_ffffl
+			: (1l << lastsize) - 1;
 	}
 
 	public static BitSet bits(int size, int... setbits) {

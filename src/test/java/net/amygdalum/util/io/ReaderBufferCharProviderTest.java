@@ -14,7 +14,7 @@ public class ReaderBufferCharProviderTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-	
+
 	@Test
 	public void testNextAtBeginning() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 0, 4, 1);
@@ -71,43 +71,46 @@ public class ReaderBufferCharProviderTest {
 	public void testPrevConsumesWithSmallBuffer() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 4, 1, 2);
 		provider.prev();
+
 		provider.prev();
+
+		assertThat(provider.lookahead(), equalTo('c'));
 	}
 
 	@Test
 	public void testPrevConsumesWithTooSmallBuffer() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 4, 1, 1);
 		provider.prev();
-		
+
 		thrown.expect(OutOfBufferException.class);
-		
+
 		provider.prev();
 	}
 
 	@Test
 	public void testForwardAtBeginning() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 0, 4, 1);
-		
+
 		provider.forward(1);
-		
+
 		assertThat(provider.next(), equalTo('b'));
 	}
 
 	@Test
 	public void testForwardInMiddle() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 1, 4, 1);
-		
+
 		provider.forward(1);
-		
+
 		assertThat(provider.next(), equalTo('c'));
 	}
 
 	@Test
 	public void testForwardConsumesWithSmallBuffer() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 0, 1, 1);
-		
+
 		provider.forward(1);
-		
+
 		assertThat(provider.next(), equalTo('b'));
 	}
 
@@ -116,7 +119,7 @@ public class ReaderBufferCharProviderTest {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 0, 1, 0);
 
 		provider.forward(2);
-		
+
 		assertThat(provider.next(), equalTo('c'));
 	}
 
@@ -141,11 +144,11 @@ public class ReaderBufferCharProviderTest {
 	@Test
 	public void testFinishedAfterConsuming() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 1, 2, 1);
-		
+
 		provider.next();
 		provider.next();
 		provider.next();
-		
+
 		assertThat(provider.finished(), is(true));
 		assertThat(provider.finished(), is(true));
 	}
@@ -188,7 +191,7 @@ public class ReaderBufferCharProviderTest {
 	public void testMoveAndCurrent() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 4, 1);
 		provider.move(3);
-		
+
 		assertThat(provider.current(), equalTo(3l));
 	}
 
@@ -196,7 +199,7 @@ public class ReaderBufferCharProviderTest {
 	public void testMoveReverseAndCurrent() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 4, 1);
 		provider.move(1);
-		
+
 		assertThat(provider.current(), equalTo(1l));
 	}
 
@@ -204,14 +207,14 @@ public class ReaderBufferCharProviderTest {
 	public void testMoveNotAndCurrent() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
 		provider.move(2);
-		
+
 		assertThat(provider.current(), equalTo(2l));
 	}
 
 	@Test
 	public void testMoveBeyondReverseBufferAndCurrent() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		thrown.expect(OutOfBufferException.class);
 		provider.move(1);
 	}
@@ -220,7 +223,7 @@ public class ReaderBufferCharProviderTest {
 	public void testMoveBeyondBufferAndCurrent() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 0, 1, 0);
 		provider.move(3);
-		
+
 		assertThat(provider.current(), equalTo(3l));
 	}
 
@@ -234,32 +237,32 @@ public class ReaderBufferCharProviderTest {
 	@Test
 	public void testAtOnCurrent() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		assertThat(provider.at(2), equalTo('c'));
 	}
 
 	@Test
 	public void testAtInRange() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 1);
-		
+
 		assertThat(provider.at(3), equalTo('d'));
 	}
 
 	@Test
 	public void testAtFailsIfTooLongBackward() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		thrown.expect(OutOfBufferException.class);
-		
+
 		provider.at(1);
 	}
 
 	@Test
 	public void testAtFailsIfTooLongForward() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 0, 1, 0);
-		
+
 		thrown.expect(OutOfBufferException.class);
-		
+
 		provider.at(1);
 	}
 
@@ -287,28 +290,28 @@ public class ReaderBufferCharProviderTest {
 	@Test
 	public void testBetweenToLarge() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		thrown.expect(OutOfBufferException.class);
-		
+
 		provider.between(1, 3);
 	}
 
 	@Test
 	public void testBetweenToFar() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 0, 1, 1);
-		
+
 		thrown.expect(OutOfBufferException.class);
-		
-		provider.between(2,3);
+
+		provider.between(2, 3);
 	}
 
 	@Test
 	public void testBetweenToFarBack() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		thrown.expect(OutOfBufferException.class);
-		
-		provider.between(0,1);
+
+		provider.between(0, 1);
 	}
 
 	@Test
@@ -351,58 +354,58 @@ public class ReaderBufferCharProviderTest {
 	@Test
 	public void testChangedWithoutChange() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		assertThat(provider.changed(), is(false));
 	}
 
 	@Test
 	public void testChangedWithChange() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		provider.mark();
-		
+
 		provider.forward(1);
-		
+
 		assertThat(provider.changed(), is(true));
 	}
 
 	@Test
 	public void testChangedWithTemporaryChange() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		provider.mark();
-		
+
 		provider.next();
 		provider.prev();
-		
+
 		assertThat(provider.changed(), is(false));
 	}
 
 	@Test
 	public void testChangedDoubleCall() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		provider.mark();
-		
+
 		provider.forward(1);
 		provider.changed();
-		
+
 		assertThat(provider.changed(), is(false));
 	}
 
 	@Test
 	public void testFinish() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 1, 0);
-		
+
 		provider.finish();
-		
+
 		assertThat(provider.finished(), is(true));
 	}
 
 	@Test
 	public void testFinishedLookahead() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 4, 1);
-		
+
 		assertThat(provider.finished(1), is(false));
 		assertThat(provider.finished(2), is(true));
 	}
@@ -410,7 +413,7 @@ public class ReaderBufferCharProviderTest {
 	@Test
 	public void testFinishedLookaheadRepeatedly() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 4, 1);
-		
+
 		assertThat(provider.finished(2), is(true));
 		assertThat(provider.finished(2), is(true));
 	}
@@ -418,33 +421,33 @@ public class ReaderBufferCharProviderTest {
 	@Test
 	public void testFinishedLookaheadOutOfBuffer() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 3, 0);
-		
+
 		thrown.expect(OutOfBufferException.class);
-		
+
 		provider.finished(2);
 	}
 
 	@Test
 	public void testFinishedLookaheadNotChangesState() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 2, 2, 1);
-		
+
 		assertThat(provider.finished(2), is(true));
 		assertThat(provider.finished(1), is(false));
 	}
-	
+
 	@Test
 	public void testFinishedLookaheadBeforeEnd() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 4, 1, 1);
-		
+
 		provider.prev();
-		
+
 		assertThat(provider.finished(1), is(true));
 	}
-	
+
 	@Test
 	public void testFinishedLookaheadAtEnd() throws Exception {
 		ReaderBufferCharProvider provider = new ReaderBufferCharProvider(new StringReader("abcd"), 4, 1, 1);
-		
+
 		assertThat(provider.finished(0), is(true));
 		assertThat(provider.finished(1), is(true));
 	}

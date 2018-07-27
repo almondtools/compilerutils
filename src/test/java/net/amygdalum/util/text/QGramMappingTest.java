@@ -7,8 +7,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.almondtools.conmatch.datatypes.PrimitiveArrayMatcher;
-
 public class QGramMappingTest {
 
     @Test
@@ -56,7 +54,7 @@ public class QGramMappingTest {
             (1 << 8) + (2 << 1),
             (1 << 9) + 2,
             (1 << 9) + (2 << 1)));
-        assertThat(mapper.map(chars(255, 254), 0, doubleMapping()), PrimitiveArrayMatcher.intArrayContaining(
+        assertThat(mapper.map(chars(255, 254), 0, doubleMapping()), intArrayContaining(
             (255 << 8) + 254,
             (255 << 8) + 252,
             (254 << 8) + 254,
@@ -72,7 +70,7 @@ public class QGramMappingTest {
             (1 << 4) + (2 << 1),
             (1 << 5) + 2,
             (1 << 5) + (2 << 1)));
-        assertThat(mapper.map(chars(255, 254), 0, doubleMapping()), PrimitiveArrayMatcher.intArrayContaining(
+        assertThat(mapper.map(chars(255, 254), 0, doubleMapping()), intArrayContaining(
             (15 << 4) + 14,
             (15 << 4) + 12,
             (14 << 4) + 14,

@@ -1,6 +1,7 @@
 package net.amygdalum.util.builders;
 
-import java.util.Arrays;
+import static java.util.Arrays.asList;
+
 import java.util.Iterator;
 
 public final class Iterators {
@@ -10,7 +11,7 @@ public final class Iterators {
 
 	@SafeVarargs
 	public static <T> Iterator<T> of(T... elements) {
-		return Arrays.asList(elements).iterator();
+		return asList(elements).iterator();
 	}
 
 }

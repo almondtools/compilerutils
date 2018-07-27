@@ -2,7 +2,6 @@ package net.amygdalum.util.builders;
 
 import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -54,7 +53,7 @@ public final class Sets<T> {
 
 	@SafeVarargs
 	public static <T> Set<T> of(T... elements) {
-		return new HashSet<T>(Arrays.asList(elements));
+		return new HashSet<T>(asList(elements));
 	}
 
 	@SafeVarargs
@@ -70,7 +69,7 @@ public final class Sets<T> {
 	
 	@SafeVarargs
 	public static <T> Set<T> ofLinked(T... elements) {
-		return new LinkedHashSet<T>(Arrays.asList(elements));
+		return new LinkedHashSet<T>(asList(elements));
 	}
 
 	@SafeVarargs
@@ -135,7 +134,7 @@ public final class Sets<T> {
 
 	@SuppressWarnings("unchecked")
 	public Sets<T> addAll(T... add) {
-		set.addAll(Arrays.asList(add));
+		set.addAll(asList(add));
 		return this;
 	}
 
@@ -162,7 +161,7 @@ public final class Sets<T> {
 
 	@SuppressWarnings("unchecked")
 	public Sets<T> removeAll(T... remove) {
-		set.removeAll(Arrays.asList(remove));
+		set.removeAll(asList(remove));
 		return this;
 	}
 
@@ -193,7 +192,7 @@ public final class Sets<T> {
 
 	@SuppressWarnings("unchecked")
 	public Sets<T> retainAll(T... retain) {
-		set.retainAll(Arrays.asList(retain));
+		set.retainAll(asList(retain));
 		return this;
 	}
 

@@ -1,5 +1,7 @@
 package net.amygdalum.util.builders;
 
+import static java.util.Arrays.asList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,7 +23,7 @@ public final class Lists<T> {
 
 	@SafeVarargs
 	public static <T> Lists<T> list(T... elements) {
-		return new Lists<T>(java.util.Arrays.asList(elements));
+		return new Lists<T>(asList(elements));
 	}
 
 	public static <T> Lists<T> empty() {
@@ -30,12 +32,12 @@ public final class Lists<T> {
 
 	@SafeVarargs
 	public static <T> List<T> of(T... elements) {
-		return new ArrayList<T>(java.util.Arrays.asList(elements));
+		return new ArrayList<T>(asList(elements));
 	}
 
 	@SafeVarargs
 	public static <T> List<T> ofLinked(T... elements) {
-		return new LinkedList<T>(java.util.Arrays.asList(elements));
+		return new LinkedList<T>(asList(elements));
 	}
 
 	@SafeVarargs
@@ -90,7 +92,7 @@ public final class Lists<T> {
 
 	@SuppressWarnings("unchecked")
 	public Lists<T> addAll(T... add) {
-		list.addAll(java.util.Arrays.asList(add));
+		list.addAll(asList(add));
 		return this;
 	}
 
@@ -113,7 +115,7 @@ public final class Lists<T> {
 
 	@SuppressWarnings("unchecked")
 	public Lists<T> removeAll(T... remove) {
-		list.removeAll(java.util.Arrays.asList(remove));
+		list.removeAll(asList(remove));
 		return this;
 	}
 
@@ -145,7 +147,7 @@ public final class Lists<T> {
 
 	@SuppressWarnings("unchecked")
 	public Lists<T> retainAll(T... retain) {
-		list.retainAll(java.util.Arrays.asList(retain));
+		list.retainAll(asList(retain));
 		return this;
 	}
 

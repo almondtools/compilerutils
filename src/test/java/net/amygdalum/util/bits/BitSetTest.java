@@ -19,19 +19,19 @@ public class BitSetTest {
 
     @Test
     public void testBitSet() throws Exception {
-        assertThat(BitSet.bits(64, 7), satisfiesDefaultEquality()
-            .andEqualTo(BitSet.bits(64, 7))
-            .andNotEqualTo(BitSet.bits(64, 8))
-            .andNotEqualTo(BitSet.bits(63, 7))
-            .andNotEqualTo(BitSet.bits(63, 8))
-            .andNotEqualTo(BitSet.bits(64, 7, 2))
-            .andNotEqualTo(BitSet.bits(64))
+        assertThat(bits(64, 7), satisfiesDefaultEquality()
+            .andEqualTo(bits(64, 7))
+            .andNotEqualTo(bits(64, 8))
+            .andNotEqualTo(bits(63, 7))
+            .andNotEqualTo(bits(63, 8))
+            .andNotEqualTo(bits(64, 7, 2))
+            .andNotEqualTo(bits(64))
             .includingToString());
     }
 
     @Test
     public void testBitSetAllBits() throws Exception {
-        BitSet all = BitSet.all(64);
+        BitSet all = all(64);
         assertThat(all.nextSetBit(0), equalTo(0));
         assertThat(all.nextClearBit(0), equalTo(-1));
         assertThat(all.allSetBits().length, equalTo(64));
@@ -40,7 +40,7 @@ public class BitSetTest {
 
     @Test
     public void testBitSetNoBits() throws Exception {
-        BitSet all = BitSet.empty(64);
+        BitSet all = empty(64);
         assertThat(all.nextSetBit(0), equalTo(-1));
         assertThat(all.nextClearBit(0), equalTo(0));
         assertThat(all.allSetBits().length, equalTo(0));
@@ -49,7 +49,7 @@ public class BitSetTest {
 
     @Test
     public void testNextSetBit64() throws Exception {
-        BitSet bits = BitSet.bits(64, 3, 5, 33, 55, 63);
+        BitSet bits = bits(64, 3, 5, 33, 55, 63);
         assertThat(bits.nextSetBit(0), equalTo(3));
         assertThat(bits.nextSetBit(3), equalTo(3));
         assertThat(bits.nextSetBit(4), equalTo(5));
@@ -65,14 +65,14 @@ public class BitSetTest {
 
     @Test
     public void testAllSetBits64() throws Exception {
-        BitSet bits = BitSet.bits(64, 3, 5, 33, 55, 63);
+        BitSet bits = bits(64, 3, 5, 33, 55, 63);
         assertThat(bits.allSetBits(), intArrayContaining(3, 5, 33, 55, 63));
         assertThat(bits.not().allClearBits(), intArrayContaining(3, 5, 33, 55, 63));
     }
 
     @Test
     public void testNextSetBit128() throws Exception {
-        BitSet bits = BitSet.bits(128, 3, 5, 33, 55, 78, 127);
+        BitSet bits = bits(128, 3, 5, 33, 55, 78, 127);
         assertThat(bits.nextSetBit(0), equalTo(3));
         assertThat(bits.nextSetBit(3), equalTo(3));
         assertThat(bits.nextSetBit(4), equalTo(5));
@@ -90,14 +90,14 @@ public class BitSetTest {
 
     @Test
     public void testAllSetBit128() throws Exception {
-        BitSet bits = BitSet.bits(128, 3, 5, 33, 55, 78, 127);
+        BitSet bits = bits(128, 3, 5, 33, 55, 78, 127);
         assertThat(bits.allSetBits(), intArrayContaining(3, 5, 33, 55, 78, 127));
         assertThat(bits.not().allClearBits(), intArrayContaining(3, 5, 33, 55, 78, 127));
     }
 
     @Test
     public void testNextClearBit64() throws Exception {
-        BitSet bits = BitSet.bits(64, 3, 5, 33, 55, 56, 63);
+        BitSet bits = bits(64, 3, 5, 33, 55, 56, 63);
         assertThat(bits.nextClearBit(55), equalTo(57));
         assertThat(bits.nextClearBit(0), equalTo(0));
         assertThat(bits.nextClearBit(3), equalTo(4));
@@ -114,7 +114,7 @@ public class BitSetTest {
 
     @Test
     public void testNextClearBit128() throws Exception {
-        BitSet bits = BitSet.bits(128, 3, 5, 33, 55, 63, 64, 78, 127);
+        BitSet bits = bits(128, 3, 5, 33, 55, 63, 64, 78, 127);
         assertThat(bits.nextClearBit(0), equalTo(0));
         assertThat(bits.nextClearBit(3), equalTo(4));
         assertThat(bits.nextClearBit(4), equalTo(4));
@@ -132,9 +132,9 @@ public class BitSetTest {
 
     @Test
     public void testSize() throws Exception {
-        assertThat(BitSet.bits(2, 1).size(), equalTo(2));
-        assertThat(BitSet.empty(3).size(), equalTo(3));
-        assertThat(BitSet.all(4).size(), equalTo(4));
+        assertThat(bits(2, 1).size(), equalTo(2));
+        assertThat(empty(3).size(), equalTo(3));
+        assertThat(all(4).size(), equalTo(4));
         assertThat(BitSet.ofLong(4).size(), equalTo(64));
         assertThat(BitSet.ofLong(65, 4).size(), equalTo(128));
     }
@@ -152,7 +152,7 @@ public class BitSetTest {
 
     @Test
     public void testGetOutRange() throws Exception {
-        BitSet bs = BitSet.all(11);
+        BitSet bs = all(11);
 
         assertThat(bs.get(11), is(false));
         assertThat(bs.get(64), is(false));
@@ -161,7 +161,7 @@ public class BitSetTest {
 
     @Test
     public void testSetInRange() throws Exception {
-        BitSet bs = BitSet.empty(4);
+        BitSet bs = empty(4);
 
         bs.set(2);
 
@@ -173,7 +173,7 @@ public class BitSetTest {
 
     @Test
     public void testClearInRange() throws Exception {
-        BitSet bs = BitSet.all(5);
+        BitSet bs = all(5);
 
         bs.clear(3);
 
@@ -186,7 +186,7 @@ public class BitSetTest {
 
     @Test
     public void testSetOutRange() throws Exception {
-        BitSet bs = BitSet.empty(4);
+        BitSet bs = empty(4);
 
         bs.set(4);
         bs.set(64);
@@ -200,7 +200,7 @@ public class BitSetTest {
 
     @Test
     public void testClearOutRange() throws Exception {
-        BitSet bs = BitSet.all(5);
+        BitSet bs = all(5);
 
         bs.clear(5);
         bs.clear(64);
@@ -220,8 +220,8 @@ public class BitSetTest {
         assertThat(ofLong(0x0001_0000_0000_0000l, 0l).isEmpty(), is(false));
         assertThat(ofLong(0x0000_0000_0010_0000l).isEmpty(), is(false));
         assertThat(ofLong(0l, 0x0000_0000_0010_0000l).isEmpty(), is(false));
-        assertThat(BitSet.empty(5).isEmpty(), is(true));
-        assertThat(BitSet.all(3).isEmpty(), is(false));
+        assertThat(empty(5).isEmpty(), is(true));
+        assertThat(all(3).isEmpty(), is(false));
     }
 
     @Test

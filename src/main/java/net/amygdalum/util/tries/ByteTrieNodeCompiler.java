@@ -84,7 +84,7 @@ public class ByteTrieNodeCompiler<T> {
 
 	private ByteTrieNode<T> createNode(ByteObjectMap<ByteTrieNode<T>> nexts, T attached) {
 		if (isQualifiedForLeafNode(nexts)) {
-			return createTrieLeafNode(nexts, attached);
+			return createTrieLeafNode(attached);
 		} else if (isQualifiedForSingleNode(nexts)) {
 			return createTrieSingleNode(nexts, attached);
 		} else {
@@ -96,7 +96,7 @@ public class ByteTrieNodeCompiler<T> {
 		return nexts.size() == 0;
 	}
 
-	private ByteTrieNode<T> createTrieLeafNode(ByteObjectMap<ByteTrieNode<T>> nexts, T attached) {
+	private ByteTrieNode<T> createTrieLeafNode(T attached) {
 		return new ByteTrieTerminalNode<T>(attached);
 	}
 
