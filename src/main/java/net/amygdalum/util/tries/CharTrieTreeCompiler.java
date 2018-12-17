@@ -8,32 +8,33 @@ import java.util.Map;
 import net.amygdalum.util.map.CharObjectMap;
 import net.amygdalum.util.map.CharObjectMap.Entry;
 
-public class CharTrieNodeCompiler<T> {
+public class CharTrieTreeCompiler<T> {
 
 	private boolean compressed;
 	private Map<PreCharTrieNode<T>, CharTrieNode<T>> nodes;
 	private Map<CharTrieNode<T>, PreCharTrieNode<T>> reverse;
 
-	public CharTrieNodeCompiler(boolean compressed) {
+	public CharTrieTreeCompiler(boolean compressed) {
 		this.compressed = compressed;
 		this.nodes = new HashMap<>();
 		this.reverse = new HashMap<>();
 	}
 
 	@SuppressWarnings("unchecked")
-	public CharTrieNode<T>[] compileAndLink(PreCharTrieNode<T>[] node) {
-		CharTrieNode<T>[] compiled = new CharTrieNode[node.length];
+	public CharTrie<T>[] compileAndLink(PreCharTrieNode<T>[] node) {
+		CharTrie<T>[] compiled = new CharTrie[node.length];
 		for (int i = 0; i < compiled.length; i++) {
-			compiled[i] = compile(node[i]);
+			CharTrieNode<T> compiledNode = compile(node[i]);
+			compiled[i] = compiledNode == null ? null : new CharTrieTree<>(compiledNode);
 		}
 		link();
 		return compiled;
 	}
 
-	public CharTrieNode<T> compileAndLink(PreCharTrieNode<T> node) {
+	public CharTrie<T> compileAndLink(PreCharTrieNode<T> node) {
 		CharTrieNode<T> compiled = compile(node);
 		link();
-		return compiled;
+		return new CharTrieTree<T>(compiled);
 	}
 
 	private CharTrieNode<T> compile(PreCharTrieNode<T> node) {
