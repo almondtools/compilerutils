@@ -6,32 +6,33 @@ import java.util.Map;
 import net.amygdalum.util.map.ByteObjectMap;
 import net.amygdalum.util.map.ByteObjectMap.Entry;
 
-public class ByteTrieNodeCompiler<T> {
+public class ByteTrieTreeCompiler<T> {
 
 	private boolean compressed;
 	private Map<PreByteTrieNode<T>, ByteTrieNode<T>> nodes;
 	private Map<ByteTrieNode<T>, PreByteTrieNode<T>> reverse;
 
-	public ByteTrieNodeCompiler(boolean compressed) {
+	public ByteTrieTreeCompiler(boolean compressed) {
 		this.compressed = compressed;
 		this.nodes = new HashMap<>();
 		this.reverse = new HashMap<>();
 	}
 
 	@SuppressWarnings("unchecked")
-	public ByteTrieNode<T>[] compileAndLink(PreByteTrieNode<T>[] node) {
-		ByteTrieNode<T>[] compiled = new ByteTrieNode[node.length];
+	public ByteTrie<T>[] compileAndLink(PreByteTrieNode<T>[] node) {
+		ByteTrie<T>[] compiled = new ByteTrie[node.length];
 		for (int i = 0; i < compiled.length; i++) {
-			compiled[i] = compile(node[i]);
+			ByteTrieNode<T> compiledNode = compile(node[i]);
+			compiled[i] = compiledNode == null ? null : new ByteTrieTree<>(compiledNode);
 		}
 		link();
 		return compiled;
 	}
 
-	public ByteTrieNode<T> compileAndLink(PreByteTrieNode<T> node) {
+	public ByteTrie<T> compileAndLink(PreByteTrieNode<T> node) {
 		ByteTrieNode<T> compiled = compile(node);
 		link();
-		return compiled;
+		return new ByteTrieTree<>(compiled);
 	}
 
 	private ByteTrieNode<T> compile(PreByteTrieNode<T> node) {
