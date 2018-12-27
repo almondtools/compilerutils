@@ -4,22 +4,12 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Graph<K> {
+public class Graph<K extends Comparable<K>> {
 
-	private GraphNode<K> root;
 	private Map<K, GraphNode<K>> nodes;
 	
 	public Graph() {
 		this.nodes = new LinkedHashMap<K, GraphNode<K>>();
-	}
-	
-	public GraphNode<K> getRoot() {
-		return root;
-	}
-
-	public GraphNode<K> createRoot(K key) {
-		root = createNode(key);
-		return root;
 	}
 	
 	public GraphNode<K> getNode(K key) {

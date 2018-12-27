@@ -1,11 +1,10 @@
 package net.amygdalum.util.graph;
 
 
-public interface Traversal<K,V> {
+public interface Traversal<T extends Comparable<T>> {
 
-	void traverse();
-	void traverseNode(GraphNode<K> node);
-	void setData(GraphNode<K> node, V data);
-	V getData(GraphNode<K> node, Class<V> clazz);
+	void traverse(GraphNode<T> start);
+
+	void visitGraphNode(GraphNode<T> node);
 
 }

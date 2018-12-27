@@ -1,5 +1,6 @@
 package net.amygdalum.util.text;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class ByteUtils {
@@ -58,6 +59,22 @@ public final class ByteUtils {
 			}
 		}
 		return len;
+	}
+
+	public static List<Byte> asList(byte[] bytes) {
+		List<Byte> list = new ArrayList<>(bytes.length);
+		for (int i = 0; i < bytes.length; i++) {
+			list.add(bytes[i]);
+		}
+		return list;
+	}
+
+	public static List<Byte> reverseList(byte[] bytes) {
+		List<Byte> list = new ArrayList<>(bytes.length);
+		for (int i = bytes.length - 1; i >= 0; i--) {
+			list.add(bytes[i]);
+		}
+		return list;
 	}
 
 }

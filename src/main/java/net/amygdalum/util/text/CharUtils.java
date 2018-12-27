@@ -1,5 +1,6 @@
 package net.amygdalum.util.text;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
@@ -148,5 +149,22 @@ public final class CharUtils {
 		}
 		return lengthsArray;
 	}
+
+	public static List<Character> asList(char[] chars) {
+		List<Character> list = new ArrayList<>(chars.length);
+		for (int i = 0; i < chars.length; i++) {
+			list.add(chars[i]);
+		}
+		return list;
+	}
+
+	public static List<Character> reverseList(char[] chars) {
+		List<Character> list = new ArrayList<>(chars.length);
+		for (int i = chars.length - 1; i >= 0; i--) {
+			list.add(chars[i]);
+		}
+		return list;
+	}
+
 
 }

@@ -1,33 +1,46 @@
 package net.amygdalum.util.graph;
 
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
-public abstract class PreOrderTraversal<K, V> extends AbstractTraversal<K, V> implements Traversal<K, V> {
+public abstract class PreOrderTraversal<T extends Comparable<T>> implements Traversal<T> {
 
-	private Set<GraphNode<K>> visited;
-
-	public PreOrderTraversal(Graph<K> graph) {
-		super(graph);
-		this.visited = new HashSet<GraphNode<K>>();
+	public PreOrderTraversal() {
 	}
 
 	@Override
-	public void traverse() {
-		super.traverse();
-	}
+	public void traverse(GraphNode<T> start) {
+		Set<GraphNode<T>> visited = new HashSet<>();
 
-	@Override
-	public void traverseNode(GraphNode<K> node) {
-		if (!visited.contains(node)) {
+		Deque<GraphNode<T>> ordered = new LinkedList<>();
+		Deque<GraphNode<T>> preOrdered = new LinkedList<>();
+
+		ordered.push(start);
+
+		while (!ordered.isEmpty()) {
+			GraphNode<T> node = ordered.peek();
+			if (visited.contains(node)) {
+				ordered.pop();
+				continue;
+			}
 			visited.add(node);
-			visitGraphNode(node);
-			for (GraphNode<K> next : node.getSuccessors()) {
-				next.apply(this);
+			
+			preOrdered.add(node);
+
+			GraphNode<T>[] successors = node.getSuccessors();
+			for (int i = successors.length-1; i >= 0 ; i--) {
+				if (visited.contains(successors[i])) {
+					continue;
+				}
+				ordered.push(successors[i]);
 			}
 		}
-	}
 
-	public abstract void visitGraphNode(GraphNode<K> node);
+		for (GraphNode<T> node : preOrdered) {
+			visitGraphNode(node);
+		}
+	}
 
 }
