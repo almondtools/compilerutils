@@ -8,9 +8,9 @@ import net.amygdalum.util.text.ByteDawg;
 import net.amygdalum.util.text.ByteNode;
 
 /**
- * A LinkedByteWordGraph is a Directed Acyclic Word Graph based on bytes. It has following properties:
- * - acyclic (no back links, no support links)
- * - each node may be reached by one multiple other nodes (i.e. not a tree)
+ * A LinkedByteWordGraph is a Directed Acyclic Word Graph based on bytes. It has
+ * following properties: - acyclic (no back links, no support links) - each node
+ * may be reached by one multiple other nodes (i.e. not a tree)
  * 
  * @param <T> the type of attachment storable in each graph node
  */
@@ -26,7 +26,7 @@ public class LinkedByteDawg<T> implements ByteDawg<T> {
 	public ByteAutomaton<T> cursor() {
 		return new Cursor<>(root);
 	}
-	
+
 	@Override
 	public boolean contains(byte[] bytes) {
 		ByteNode<T> node = root;
@@ -98,15 +98,10 @@ public class LinkedByteDawg<T> implements ByteDawg<T> {
 
 		@Override
 		public boolean hasAttachments() {
-			ByteNode<S> node = current;
-			if (node != null) {
-				if (node.getAttached() != null) {
-					return true;
-				}
-			}
-			return false;
+			return current != null
+				&& current.getAttached() != null;
 		}
-		
+
 	}
 
 	private static class AttachmentIterator<S> implements Iterator<S> {
@@ -119,19 +114,15 @@ public class LinkedByteDawg<T> implements ByteDawg<T> {
 
 		@Override
 		public boolean hasNext() {
-			if (current != null) {
-				if (current.getAttached() != null) {
-					return true;
-				}
-			}
-			return false;
+			return current != null
+				&& current.getAttached() != null;
 		}
 
 		@Override
 		public S next() {
 			if (current != null) {
 				S attached = current.getAttached();
-				current = null; 
+				current = null;
 				if (attached != null) {
 					return attached;
 				}
@@ -143,6 +134,6 @@ public class LinkedByteDawg<T> implements ByteDawg<T> {
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 	}
 }

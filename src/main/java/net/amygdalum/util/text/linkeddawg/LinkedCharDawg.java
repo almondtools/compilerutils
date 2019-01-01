@@ -8,9 +8,9 @@ import net.amygdalum.util.text.CharDawg;
 import net.amygdalum.util.text.CharNode;
 
 /**
- * A LinkedCharWordGraph is a Directed Acyclic Word Graph based on characters. It has following properties:
- * - acyclic (no back links, no support links)
- * - each node may be reached by one multiple other nodes (i.e. not a tree)
+ * A LinkedCharWordGraph is a Directed Acyclic Word Graph based on characters.
+ * It has following properties: - acyclic (no back links, no support links) -
+ * each node may be reached by one multiple other nodes (i.e. not a tree)
  * 
  * @param <T> the type of attachment storable in each graph node
  */
@@ -26,7 +26,7 @@ public class LinkedCharDawg<T> implements CharDawg<T> {
 	public CharAutomaton<T> cursor() {
 		return new Cursor<>(root);
 	}
-	
+
 	@Override
 	public boolean contains(char[] chars) {
 		CharNode<T> node = root;
@@ -98,15 +98,10 @@ public class LinkedCharDawg<T> implements CharDawg<T> {
 
 		@Override
 		public boolean hasAttachments() {
-			CharNode<S> node = current;
-			if (node != null) {
-				if (node.getAttached() != null) {
-					return true;
-				}
-			}
-			return false;
+			return current != null
+				&& current.getAttached() != null;
 		}
-		
+
 	}
 
 	private static class AttachmentIterator<S> implements Iterator<S> {
@@ -119,19 +114,15 @@ public class LinkedCharDawg<T> implements CharDawg<T> {
 
 		@Override
 		public boolean hasNext() {
-			if (current != null) {
-				if (current.getAttached() != null) {
-					return true;
-				}
-			}
-			return false;
+			return current != null
+				&& current.getAttached() != null;
 		}
 
 		@Override
 		public S next() {
 			if (current != null) {
 				S attached = current.getAttached();
-				current = null; 
+				current = null;
 				if (attached != null) {
 					return attached;
 				}
@@ -143,6 +134,6 @@ public class LinkedCharDawg<T> implements CharDawg<T> {
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 	}
 }

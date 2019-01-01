@@ -8,9 +8,7 @@ import java.util.Set;
 
 public abstract class PostOrderTraversal<T extends Comparable<T>> implements Traversal<T> {
 
-	public PostOrderTraversal() {
-	}
-
+	
 	@Override
 	public void traverse(GraphNode<T> start) {
 		Set<GraphNode<T>> visited = new HashSet<>();
