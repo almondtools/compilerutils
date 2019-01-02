@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 
 import net.amygdalum.util.text.ByteAutomaton;
 import net.amygdalum.util.text.ByteDawg;
+import net.amygdalum.util.text.ByteNavigator;
 import net.amygdalum.util.text.ByteNode;
 
 /**
@@ -54,8 +55,8 @@ public class LinkedByteDawg<T> implements ByteDawg<T> {
 	}
 
 	@Override
-	public ByteNode<T> asNode() {
-		return root;
+	public ByteNavigator<T, ?> navigator() {
+		return new LinkedByteNavigator<>(root);
 	}
 
 	private static class Cursor<S> implements ByteAutomaton<S> {

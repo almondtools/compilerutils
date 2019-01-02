@@ -7,16 +7,46 @@ public final class Arrays {
 
 	public static final byte[] NO_BYTES = new byte[0];
 	public static final char[] NO_CHARS = new char[0];
-	
+
 	private Arrays() {
 	}
-	
+
 	public static int[] expand(int[] array, int next) {
 		int newlength = array.length;
 		while (newlength < next + 1) {
 			newlength *= 2;
 		}
 		int[] expandedArray = new int[newlength];
+		System.arraycopy(array, 0, expandedArray, 0, array.length);
+		return expandedArray;
+	}
+
+	public static byte[] expand(byte[] array, int next) {
+		int newlength = array.length;
+		while (newlength < next + 1) {
+			newlength *= 2;
+		}
+		byte[] expandedArray = new byte[newlength];
+		System.arraycopy(array, 0, expandedArray, 0, array.length);
+		return expandedArray;
+	}
+
+	public static char[] expand(char[] array, int next) {
+		int newlength = array.length;
+		while (newlength < next + 1) {
+			newlength *= 2;
+		}
+		char[] expandedArray = new char[newlength];
+		System.arraycopy(array, 0, expandedArray, 0, array.length);
+		return expandedArray;
+	}
+	
+	public static boolean[] expand(boolean[] array, int next) {
+		int newlength = array.length;
+		while (newlength < next + 1) {
+			newlength *= 2;
+		}
+		boolean[] expandedArray = new boolean[newlength];
 		System.arraycopy(array, 0, expandedArray, 0, array.length);
 		return expandedArray;
 	}
@@ -80,6 +110,18 @@ public final class Arrays {
 		}
 	}
 
+	public static byte[] sorted(byte[] bytes) {
+		byte[] sortedBytes = java.util.Arrays.copyOf(bytes, bytes.length);
+		java.util.Arrays.sort(sortedBytes);
+		return sortedBytes;
+	}
+
+	public static char[] sorted(char[] chars) {
+		char[] sortedChars = java.util.Arrays.copyOf(chars, chars.length);
+		java.util.Arrays.sort(sortedChars);
+		return sortedChars;
+	}
+
 	public static boolean verify(byte[] bytes, int i, byte[] tail) {
 		if (bytes.length - i != tail.length) {
 			return false;
@@ -104,12 +146,12 @@ public final class Arrays {
 		return true;
 	}
 
-	public static byte[] suffix(byte[] chars, int pos) {
-		int len = chars.length;
+	public static byte[] suffix(byte[] bytes, int pos) {
+		int len = bytes.length;
 		if (pos == len) {
 			return NO_BYTES;
 		}
-		return copyOfRange(chars, pos, len);
+		return copyOfRange(bytes, pos, len);
 	}
 
 	public static char[] suffix(char[] chars, int pos) {
@@ -118,6 +160,20 @@ public final class Arrays {
 			return NO_CHARS;
 		}
 		return copyOfRange(chars, pos, len);
+	}
+
+	public static byte[] prefix(byte[] bytes, int pos) {
+		if (pos == 0) {
+			return NO_BYTES;
+		}
+		return copyOfRange(bytes, 0, pos);
+	}
+
+	public static char[] prefix(char[] chars, int pos) {
+		if (pos == 0) {
+			return NO_CHARS;
+		}
+		return copyOfRange(chars, 0, pos);
 	}
 
 }

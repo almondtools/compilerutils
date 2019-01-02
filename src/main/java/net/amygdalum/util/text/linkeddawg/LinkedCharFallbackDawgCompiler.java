@@ -4,10 +4,11 @@ import static net.amygdalum.util.text.CharFallbackAdaptor.getFallback;
 import static net.amygdalum.util.text.CharFallbackAdaptor.setFallback;
 
 import net.amygdalum.util.text.CharDawg;
+import net.amygdalum.util.text.CharWordGraphCompiler;
 import net.amygdalum.util.text.CharNode;
 import net.amygdalum.util.text.NodeResolver;
 
-public class CharFallbackDawgFactory<T> implements CharDawgFactory<T> {
+public class LinkedCharFallbackDawgCompiler<T> implements CharWordGraphCompiler<T, CharDawg<T>> {
 
 	@Override
 	public CharNode<T> create() {

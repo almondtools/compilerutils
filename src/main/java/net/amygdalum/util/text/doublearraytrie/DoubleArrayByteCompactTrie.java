@@ -12,10 +12,11 @@ import java.util.NoSuchElementException;
 
 import net.amygdalum.util.text.AttachmentAdaptor;
 import net.amygdalum.util.text.ByteAutomaton;
-import net.amygdalum.util.text.ByteNode;
+import net.amygdalum.util.text.ByteNavigator;
+import net.amygdalum.util.text.WordSetNavigationException;
 
 /**
- * A DoubleArrayByteTrie is a Trie based on bytes. It has following properties:
+ * A DoubleArrayByteCompactTrie is a Trie based on bytes. It has following properties:
  * - acyclic (no back links, no support links)
  * - each node may be reached by exactly one node (i.e. a tree)
  * 
@@ -40,8 +41,6 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 		this.tail = new byte[INITIAL_SIZE][];
 		this.alts = new byte[INITIAL_SIZE][];
 		this.attachments = (T[]) new Object[INITIAL_SIZE];
-		this.base[1] = 1;
-		this.alts[1] = new byte[0];
 	}
 
 	private static int key(byte b) {
@@ -51,6 +50,10 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 	@Override
 	public void insert(byte[] bytes, T out) {
 		int state = 1;
+		if (base[state] == 0) {
+			base[state] = 1;
+			alts[state] = new byte[0];
+		}
 		for (int i = 0; i < bytes.length; i++) {
 			int statebase = base[state];
 			if (statebase < 0) {
@@ -231,13 +234,7 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 			nextbase++;
 			for (byte b : input) {
 				int next = nextbase + key(b);
-				if (next >= check.length) {
-					check = expand(check, next);
-					base = expand(base, next);
-					tail = expand(tail, next);
-					alts = expand(alts, next);
-					attachments = expand(attachments, next);
-				}
+				ensureSufficientLength(next);
 				if (check[next] != 0) {
 					continue nextState;
 				}
@@ -247,9 +244,19 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 		return -1;
 	}
 
+	private void ensureSufficientLength(int next) {
+		if (next >= check.length) {
+			check = expand(check, next);
+			base = expand(base, next);
+			tail = expand(tail, next);
+			alts = expand(alts, next);
+			attachments = expand(attachments, next);
+		}
+	}
+
 	@Override
 	public ByteAutomaton<T> cursor() {
-		return new Cursor<>(base, check, tail, attachments);
+		return new Cursor();
 	}
 
 	@Override
@@ -295,119 +302,64 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 	}
 
 	@Override
-	public ByteNode<T> asNode() {
-		return new NodeAdaptors<>(base, check, tail, alts, attachments)
-			.fetch(1);
+	public ByteNavigator<T, ?> navigator() {
+		return new Navigator(1);
 	}
 
-	private static class NodeAdaptors<S> {
+	public static class Builder<T> {
 
-		private int[] base;
-		private int[] check;
-		private byte[][] tail;
-		private byte[][] alts;
-		private S[] attachments;
+		private DoubleArrayByteCompactTrie<T> trie;
 
-		private AdaptorNode<S>[] nodes;
-
-		@SuppressWarnings("unchecked")
-		public NodeAdaptors(int[] base, int[] check, byte[][] tail, byte[][] alts, S[] attachments) {
-			this.base = base;
-			this.check = check;
-			this.tail = tail;
-			this.alts = alts;
-			this.attachments = attachments;
-			this.nodes = new AdaptorNode[base.length];
+		public Builder() {
+			this.trie = new DoubleArrayByteCompactTrie<T>();
 		}
 
-		public ByteNode<S> fetch(int state) {
-			AdaptorNode<S> node = nodes[state];
-			if (node == null) {
-				node = new AdaptorNode<>(this, state);
-				nodes[state] = node;
+		public int root() {
+			return 1;
+		}
+
+		public int[] insert(int state, byte... alternatives) {
+			assert trie.base[state] == 0 && trie.alts[state] == null;
+			int[] nexts = new int[alternatives.length];
+
+			int newbase = freebase(alternatives);
+			trie.base[state] = newbase;
+			trie.alts[state] = Arrays.sorted(alternatives);
+			for (int i = 0; i < alternatives.length; i++) {
+				byte b = alternatives[i];
+				int next = newbase + key(b);
+				trie.check[next] = state;
+				nexts[i] = next;
 			}
-			return node;
+			return nexts;
 		}
 
-		public void attach(int state, S out) {
-			if (tail[state] != null && tail[state].length > 0) {
-				int oldpointer = state;
-				byte[] tailbytes = tail[state];
-				int taili = 0;
-				byte tb = tailbytes[taili];
-				int nextbase = xcheck(tb);
-				base[state] = nextbase;
-
-				int tailnext = nextbase + key(tb);
-				check[tailnext] = state;
-				addAlt(state, tb);
-				base[tailnext] = STOP;
-				tail[tailnext] = suffix(tail[oldpointer], taili + 1);
-				attachments[tailnext] = attachments[oldpointer];
-
-				tail[state] = null;
-				attachments[state] = null;
-			}
-			tail[state] = NO_BYTES;
-			attachments[state] = out;
-		}
-
-		public void attach(int state, int tailpos, S out) {
-			byte[] tailbytes = tail[state];
-			int oldpointer = state;
-			int taili = 0;
-			while (taili < tailpos) {
-				byte b = tailbytes[taili];
-				int nextbase = xcheck(b);
-				base[state] = nextbase;
-				int next = nextbase + key(b);
-				check[next] = state;
-				addAlt(state, b);
-				state = next;
-				taili++;
-			}
-
-			int nextbase = xcheck(tailbytes[taili]);
-			base[state] = nextbase;
-
-			byte tb = tailbytes[taili];
-			int tailnext = nextbase + key(tb);
-			check[tailnext] = state;
-			addAlt(state, tb);
-			base[tailnext] = STOP;
-			tail[tailnext] = suffix(tail[oldpointer], taili + 1);
-			attachments[tailnext] = attachments[oldpointer];
-
-			tail[oldpointer] = null;
-			attachments[oldpointer] = null;
-
-			tail[state] = NO_BYTES;
-			attachments[state] = out;
-		}
-
-		private void addAlt(int state, byte b) {
-			byte[] bytes = alts[state];
-			if (bytes != null) {
-				alts[state] = join(bytes, b);
+		public void attach(int state, byte[] tail, T out) {
+			assert trie.base[state] == 0 || tail.length == 0;
+			trie.attachments[state] = out;
+			if (trie.base[state] == 0) {
+				if (tail.length == 0) {
+					trie.tail[state] = NO_BYTES;
+				} else {
+					trie.tail[state] = tail;
+				}
 			} else {
-				alts[state] = new byte[] {b};
+				trie.tail[state] = NO_BYTES;
 			}
 		}
 
-		private int xcheck(byte... input) {
+		public void terminate(int state) {
+			trie.base[state] = STOP;
+		}
+
+		private int freebase(byte... input) {
 			int nextbase = 0;
 			nextState: while (nextbase >= 0) {
 				nextbase++;
 				for (byte b : input) {
 					int next = nextbase + key(b);
-					if (next >= check.length) {
-						check = expand(check, next);
-						base = expand(base, next);
-						tail = expand(tail, next);
-						alts = expand(alts, next);
-						attachments = expand(attachments, next);
-					}
-					if (check[next] != 0) {
+					ensureSufficientLength(next);
+					if (trie.check[next] != 0) {
 						continue nextState;
 					}
 				}
@@ -416,153 +368,145 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 			return -1;
 		}
 
-	}
-
-	private static class AdaptorTailNode<S> implements ByteNode<S>, AttachmentAdaptor<S> {
-
-		private AdaptorNode<S> node;
-		private int tailpos;
-		private byte[] alts;
-
-		public AdaptorTailNode(AdaptorNode<S> node, int tailpos) {
-			this.node = node;
-			this.tailpos = tailpos;
-			this.alts = tailpos == node.tail.length
-				? new byte[0]
-				: new byte[] {node.tail[tailpos]};
-		}
-
-		@Override
-		public ByteNode<S> nextNode(byte b) {
-			if (tailpos < node.tail.length && alts[0] == b) {
-				return node.fetch(tailpos + 1);
-			} else {
-				return null;
+		private void ensureSufficientLength(int next) {
+			if (next >= trie.check.length) {
+				trie.check = expand(trie.check, next);
+				trie.base = expand(trie.base, next);
+				trie.tail = expand(trie.tail, next);
+				trie.alts = expand(trie.alts, next);
+				trie.attachments = expand(trie.attachments, next);
 			}
 		}
 
-		@Override
-		public S getAttached() {
-			if (node.tail.length == tailpos) {
-				return node.adaptors.attachments[node.state];
-			} else {
-				return null;
-			}
-		}
-
-		@Override
-		public byte[] getAlternatives() {
-			return alts;
-		}
-
-		@Override
-		public int getAlternativesSize() {
-			return alts.length;
-		}
-
-		@Override
-		public void attach(S attached) {
-			if (node.tail.length == tailpos) {
-				node.adaptors.attachments[node.state] = attached;
-			}
-			node.adaptors.attach(node.state, tailpos, attached);
+		public DoubleArrayByteCompactTrie<T> build() {
+			return trie;
 		}
 
 	}
 
-	private static class AdaptorNode<S> implements ByteNode<S>, AttachmentAdaptor<S> {
+	private class Navigator implements ByteNavigator<T, Navigator>, AttachmentAdaptor<T> {
 
-		private NodeAdaptors<S> adaptors;
 		private int state;
+		private int tailpos;
+		private byte[] activeTail;
 
-		private byte[] tail;
-		private AdaptorTailNode<S>[] tailnodes;
-
-		public AdaptorNode(NodeAdaptors<S> adaptors, int state) {
-			this.adaptors = adaptors;
+		public Navigator(int state) {
 			this.state = state;
 		}
 
 		@Override
-		public ByteNode<S> nextNode(byte b) {
-			int statebase = adaptors.base[state];
+		public Navigator nextNode(byte b) {
+			int statebase = base[state];
 			if (statebase < 0) {
-				return fetch(0).nextNode(b);
-			}
-			int next = statebase + key(b);
-			if (next < adaptors.check.length && adaptors.check[next] == state) {
-				return adaptors.fetch(next);
-			} else {
-				return null;
-			}
-		}
-
-		@SuppressWarnings("unchecked")
-		private AdaptorTailNode<S> fetch(int pos) {
-			if (tail == null) {
-				tail = adaptors.tail[state];
-				if (tail == null) {
-					return null;
+				if (activeTail == null) {
+					activeTail = tail[state];
+					if (activeTail == null) {
+						return null;
+					}
+					tailpos = 0;
 				}
-				tailnodes = new AdaptorTailNode[tail.length + 1];
+				if (tailpos >= activeTail.length) {
+					throw new WordSetNavigationException("unexpected navigation to " + b);
+				}
+				if (activeTail[tailpos] != b) {
+					throw new WordSetNavigationException("unexpected navigation to " + b);
+				}
+				tailpos++;
+			} else {
+				int next = statebase + key(b);
+				if (next < check.length && check[next] == state) {
+					state = next;
+				} else {
+					throw new WordSetNavigationException("unexpected navigation to " + b);
+				}
 			}
-			if (pos > tailnodes.length) {
-				return null;
+			return this;
+		}
+
+		@Override
+		public T getAttached() {
+			if (activeTail != null && tailpos == activeTail.length) {
+				return attachments[state];
+			} else if (tail[state] == NO_BYTES) {
+				return attachments[state];
 			}
-			AdaptorTailNode<S> node = tailnodes[pos];
-			if (node == null) {
-				node = new AdaptorTailNode<>(this, pos);
-				tailnodes[pos] = node;
+			return null;
+		}
+
+		@Override
+		public void attach(T out) {
+			if (activeTail != null) {
+				int oldpointer = state;
+				int taili = 0;
+				while (taili < tailpos) {
+					byte b = activeTail[taili];
+					int nextbase = xcheck(b);
+					base[state] = nextbase;
+					int next = nextbase + key(b);
+					check[next] = state;
+					addAlt(state, b);
+					state = next;
+					taili++;
+				}
+
+				int nextbase = xcheck(activeTail[taili]);
+				base[state] = nextbase;
+
+				byte tb = activeTail[taili];
+				int tailnext = nextbase + key(tb);
+				check[tailnext] = state;
+				addAlt(state, tb);
+				base[tailnext] = STOP;
+				tail[tailnext] = suffix(tail[oldpointer], taili + 1);
+				attachments[tailnext] = attachments[oldpointer];
+
+				tail[oldpointer] = null;
+				attachments[oldpointer] = null;
+
+				tail[state] = NO_BYTES;
+				attachments[state] = out;
+			} else {
+				if (tail[state] != null && tail[state].length > 0) {
+					int oldpointer = state;
+					byte[] tailbytes = tail[state];
+					int taili = 0;
+					byte tb = tailbytes[taili];
+					int nextbase = xcheck(tb);
+					base[state] = nextbase;
+
+					int tailnext = nextbase + key(tb);
+					check[tailnext] = state;
+					addAlt(state, tb);
+					base[tailnext] = STOP;
+					tail[tailnext] = suffix(tail[oldpointer], taili + 1);
+					attachments[tailnext] = attachments[oldpointer];
+
+					tail[state] = null;
+					attachments[state] = null;
+				}
+				tail[state] = NO_BYTES;
+				attachments[state] = out;
 			}
-			return node;
-		}
-
-		@Override
-		public S getAttached() {
-			return fetch(0).getAttached();
-		}
-
-		@Override
-		public int getAlternativesSize() {
-			return adaptors.alts[state].length;
-		}
-
-		@Override
-		public byte[] getAlternatives() {
-			return adaptors.alts[state];
-		}
-
-		@Override
-		public void attach(S attached) {
-			adaptors.attach(state, attached);
 		}
 
 	}
 
-	private static class Cursor<S> implements ByteAutomaton<S> {
+	private class Cursor implements ByteAutomaton<T> {
 
-		private int[] base;
-		private int[] check;
-		private byte[][] tail;
-		private S[] attachments;
 		private int state;
 		private byte[] activetail;
 		private int tailposition;
 		private AttachmentIterator iterator;
 
-		public Cursor(int[] base, int[] check, byte[][] tail, S[] attachments) {
-			this.base = base;
-			this.check = check;
-			this.tail = tail;
-			this.attachments = attachments;
+		public Cursor() {
 			this.state = 1;
-			this.activetail = null;
+			this.activetail = base[state] == STOP ? tail[state] : null;
 			this.tailposition = 0;
 			this.iterator = new AttachmentIterator();
 		}
 
 		@Override
-		public Iterator<S> iterator() {
+		public Iterator<T> iterator() {
 			iterator.init(state);
 			return iterator;
 		}
@@ -570,7 +514,7 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 		@Override
 		public void reset() {
 			this.state = 1;
-			this.activetail = null;
+			this.activetail = base[state] == STOP ? tail[state] : null;
 			this.tailposition = 0;
 		}
 
@@ -620,15 +564,15 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 		@Override
 		public boolean hasAttachments() {
 			if (tail[state] == NO_BYTES || activetail != null && tailposition == activetail.length) {
-				S s = attachments[state];
-				if (s != null) {
+				T a = attachments[state];
+				if (a != null) {
 					return true;
 				}
 			}
 			return false;
 		}
 
-		private class AttachmentIterator implements Iterator<S> {
+		private class AttachmentIterator implements Iterator<T> {
 
 			private int state;
 
@@ -648,12 +592,12 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 			}
 
 			@Override
-			public S next() {
+			public T next() {
 				if (state == 0) {
 					throw new NoSuchElementException();
 				}
 				if (tail[state] == NO_BYTES || activetail != null && tailposition == activetail.length) {
-					S a = attachments[state];
+					T a = attachments[state];
 					state = 0;
 					return a;
 				}

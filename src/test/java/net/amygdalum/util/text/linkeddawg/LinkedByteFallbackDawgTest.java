@@ -8,15 +8,24 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import net.amygdalum.util.text.ByteAutomaton;
 import net.amygdalum.util.text.ByteDawg;
+import net.amygdalum.util.text.ByteFallbackLinks;
+import net.amygdalum.util.text.ByteFallbackNavigator;
+import net.amygdalum.util.text.ByteWordSetBuilder;
 
 public class LinkedByteFallbackDawgTest {
 
-	private LinkedByteDawgBuilder<String> builder;
+	private static final byte c = (byte) 'c';
+	private static final byte g = (byte) 'g';
+	private static final byte a = (byte) 'a';
+	private static final byte t = (byte) 't';
+
+	private ByteWordSetBuilder<String, ByteDawg<String>> builder;
 
 	@Before
 	public void before() throws Exception {
-		builder = new LinkedByteDawgBuilder<>(new ByteFallbackDawgFactory<String>());
+		builder = new ByteWordSetBuilder<>(new LinkedByteFallbackDawgCompiler<String>());
 	}
 
 	@Test
@@ -245,7 +254,7 @@ public class LinkedByteFallbackDawgTest {
 			.extend(bachelor, "Bachelor")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -266,7 +275,7 @@ public class LinkedByteFallbackDawgTest {
 			.extend(jar, "Jar")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -276,7 +285,7 @@ public class LinkedByteFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
@@ -294,7 +303,7 @@ public class LinkedByteFallbackDawgTest {
 			.extend(badge, "Badge")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -304,12 +313,12 @@ public class LinkedByteFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
@@ -331,7 +340,7 @@ public class LinkedByteFallbackDawgTest {
 			.extend(baby, "Baby")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -341,19 +350,19 @@ public class LinkedByteFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
 			.nextNode(badge[3])
 			.nextNode(badge[4])
 			.getAttached(), equalTo("Badge"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(baby[0])
 			.nextNode(baby[1])
 			.nextNode(baby[2])
@@ -370,7 +379,7 @@ public class LinkedByteFallbackDawgTest {
 			.extend(bac, "Bac")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -380,11 +389,77 @@ public class LinkedByteFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bac[0])
 			.nextNode(bac[1])
 			.nextNode(bac[2])
 			.getAttached(), equalTo("Bac"));
+	}
+
+	@Test
+	public void testFallback() throws Exception {
+		ByteDawg<String> trie = builder
+			.extend("gat".getBytes("UTF-8"), "GAT")
+			.extend("cgatggg".getBytes("UTF-8"), "CGATGGG")
+			.work(new ByteFallbackLinks())
+			.build();
+
+		assertThat(trie.navigator()
+			.nextNode(c)
+			.nextNode(g)
+			.nextNode(a)
+			.nextNode(t)
+			.nextNode(g)
+			.nextNode(g)
+			.nextNode(g)
+			.getAttached(), equalTo("CGATGGG"));
+		assertThat(((ByteFallbackNavigator<String, ?>) trie.navigator())
+			.nextNode(c)
+			.nextNode(g)
+			.nextNode(a)
+			.nextNode(t)
+			.fallback()
+			.getAttached(), equalTo("GAT"));
+	}
+
+	@Test
+	public void testCursor() throws Exception {
+		ByteDawg<String> trie = builder
+			.extend("gat".getBytes("UTF-8"), "GAT")
+			.extend("cgatggg".getBytes("UTF-8"), "CGATGGG")
+			.work(new ByteFallbackLinks())
+			.build();
+
+		ByteAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept(c), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(a), is(true));
+		assertThat(cursor.accept(t), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("GAT"));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("CGATGGG"));
+	}
+
+	@Test
+	public void testCursor2() throws Exception {
+		ByteDawg<String> trie = builder
+			.extend("gatc".getBytes("UTF-8"), "GATC")
+			.extend("cgatggg".getBytes("UTF-8"), "CGATGGG")
+			.work(new ByteFallbackLinks())
+			.build();
+
+		ByteAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept(c), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(a), is(true));
+		assertThat(cursor.accept(t), is(true));
+		assertThat(cursor.accept(c), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("GATC"));
 	}
 
 }

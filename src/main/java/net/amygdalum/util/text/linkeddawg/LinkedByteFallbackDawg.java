@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 
 import net.amygdalum.util.text.ByteAutomaton;
 import net.amygdalum.util.text.ByteDawg;
+import net.amygdalum.util.text.ByteFallbackNavigator;
 import net.amygdalum.util.text.ByteNode;
 
 public class LinkedByteFallbackDawg<T> implements ByteDawg<T> {
@@ -21,7 +22,7 @@ public class LinkedByteFallbackDawg<T> implements ByteDawg<T> {
 	public ByteAutomaton<T> cursor() {
 		return new Cursor<>(root);
 	}
-	
+
 	@Override
 	public boolean contains(byte[] bytes) {
 		ByteNode<T> node = root;
@@ -49,8 +50,8 @@ public class LinkedByteFallbackDawg<T> implements ByteDawg<T> {
 	}
 
 	@Override
-	public ByteNode<T> asNode() {
-		return root;
+	public ByteFallbackNavigator<T, ?> navigator() {
+		return new LinkedByteFallbackNavigator<T>(root);
 	}
 
 	private static class Cursor<S> implements ByteAutomaton<S> {

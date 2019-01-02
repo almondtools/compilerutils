@@ -1,4 +1,4 @@
-package net.amygdalum.util.text.linkeddawg;
+package net.amygdalum.util.text;
 
 import static net.amygdalum.util.text.AttachmentAdaptor.attach;
 import static net.amygdalum.util.text.CharConnectionAdaptor.addNextNode;
@@ -14,37 +14,29 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import net.amygdalum.util.text.CharDawg;
-import net.amygdalum.util.text.CharDawgBuilder;
-import net.amygdalum.util.text.CharNode;
-import net.amygdalum.util.text.CharTask;
-import net.amygdalum.util.text.JoinStrategy;
-import net.amygdalum.util.text.NodeResolver;
+public class CharWordSetBuilder<T, R> {
 
-public class LinkedCharDawgBuilder<T> implements CharDawgBuilder<T> {
-
-	private CharDawgFactory<T> factory;
+	private CharWordGraphCompiler<T, R> compiler;
 	private JoinStrategy<T> strategy;
 	private CharNode<T> root;
 
-	public LinkedCharDawgBuilder(CharDawgFactory<T> factory) {
-		this.factory = factory;
-		this.root = factory.create();
+	public CharWordSetBuilder(CharWordGraphCompiler<T, R> compiler) {
+		this.compiler = compiler;
+		this.root = compiler.create();
 	}
 
-	public LinkedCharDawgBuilder(CharDawgFactory<T> factory, JoinStrategy<T> strategy) {
-		this.factory = factory;
+	public CharWordSetBuilder(CharWordGraphCompiler<T, R> compiler, JoinStrategy<T> strategy) {
+		this.compiler = compiler;
 		this.strategy = strategy;
-		this.root = factory.create();
+		this.root = compiler.create();
 	}
 
-	@Override
-	public CharDawgBuilder<T> extend(char[] chars, T data) {
+	public CharWordSetBuilder<T, R> extend(char[] chars, T data) {
 		CharNode<T> node = root;
 		for (char c : chars) {
 			CharNode<T> next = node.nextNode(c);
 			if (next == null) {
-				next = factory.create();
+				next = compiler.create();
 				addNextNode(node, c, next);
 			}
 			node = next;
@@ -64,8 +56,7 @@ public class LinkedCharDawgBuilder<T> implements CharDawgBuilder<T> {
 		return this;
 	}
 
-	@Override
-	public CharDawgBuilder<T> work(CharTask<T> task) {
+	public CharWordSetBuilder<T, R> work(CharTask<T> task) {
 		Queue<CharNode<T>> worklist = new LinkedList<>();
 		worklist.addAll(task.init(root));
 		while (!worklist.isEmpty()) {
@@ -138,7 +129,7 @@ public class LinkedCharDawgBuilder<T> implements CharDawgBuilder<T> {
 	private List<CharNode<T>> compiled() {
 		Set<CharNode<T>> visited = new HashSet<>();
 		List<CharNode<T>> compiled = new LinkedList<>();
-		
+
 		Queue<CharNode<T>> todo = new LinkedList<>();
 		todo.add(root);
 		while (!todo.isEmpty()) {
@@ -151,22 +142,21 @@ public class LinkedCharDawgBuilder<T> implements CharDawgBuilder<T> {
 			for (char c : current.getAlternatives()) {
 				CharNode<T> nextNode = current.nextNode(c);
 				todo.add(nextNode);
-			}			
+			}
 		}
-		
+
 		return compiled;
 	}
 
-	@Override
-	public CharDawg<T> build() {
-		NodeResolver<CharNode<T>> nodes = factory.resolver();
+	public R build() {
+		NodeResolver<CharNode<T>> nodes = compiler.resolver();
 		for (CharNode<T> node : postOrdered()) {
 			nodes.compile(node);
 		}
 		for (CharNode<T> node : compiled()) {
 			nodes.link(node);
 		}
-		return factory.build(nodes.resolve(root));
+		return compiler.build(nodes.resolve(root));
 	}
 
 }

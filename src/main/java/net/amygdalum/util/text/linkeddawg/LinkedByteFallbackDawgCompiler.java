@@ -4,10 +4,11 @@ import static net.amygdalum.util.text.ByteFallbackAdaptor.getFallback;
 import static net.amygdalum.util.text.ByteFallbackAdaptor.setFallback;
 
 import net.amygdalum.util.text.ByteDawg;
+import net.amygdalum.util.text.ByteWordGraphCompiler;
 import net.amygdalum.util.text.ByteNode;
 import net.amygdalum.util.text.NodeResolver;
 
-public class ByteFallbackDawgFactory<T> implements ByteDawgFactory<T> {
+public class LinkedByteFallbackDawgCompiler<T> implements ByteWordGraphCompiler<T, ByteDawg<T>> {
 
 	@Override
 	public ByteNode<T> create() {

@@ -1,4 +1,4 @@
-package net.amygdalum.util.text.linkeddawg;
+package net.amygdalum.util.text;
 
 import static net.amygdalum.util.text.AttachmentAdaptor.attach;
 import static net.amygdalum.util.text.ByteConnectionAdaptor.addNextNode;
@@ -14,37 +14,29 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import net.amygdalum.util.text.ByteDawg;
-import net.amygdalum.util.text.ByteDawgBuilder;
-import net.amygdalum.util.text.ByteNode;
-import net.amygdalum.util.text.ByteTask;
-import net.amygdalum.util.text.JoinStrategy;
-import net.amygdalum.util.text.NodeResolver;
+public class ByteWordSetBuilder<T, R> {
 
-public class LinkedByteDawgBuilder<T> implements ByteDawgBuilder<T> {
-
-	private ByteDawgFactory<T> factory;
+	private ByteWordGraphCompiler<T, R> compiler;
 	private JoinStrategy<T> strategy;
 	private ByteNode<T> root;
 
-	public LinkedByteDawgBuilder(ByteDawgFactory<T> factory) {
-		this.factory = factory;
-		this.root = factory.create();
+	public ByteWordSetBuilder(ByteWordGraphCompiler<T, R> compiler) {
+		this.compiler = compiler;
+		this.root = compiler.create();
 	}
 
-	public LinkedByteDawgBuilder(ByteDawgFactory<T> factory, JoinStrategy<T> strategy) {
-		this.factory = factory;
+	public ByteWordSetBuilder(ByteWordGraphCompiler<T, R> compiler, JoinStrategy<T> strategy) {
+		this.compiler = compiler;
 		this.strategy = strategy;
-		this.root = factory.create();
+		this.root = compiler.create();
 	}
 
-	@Override
-	public ByteDawgBuilder<T> extend(byte[] bytes, T data) {
+	public ByteWordSetBuilder<T, R> extend(byte[] bytes, T data) {
 		ByteNode<T> node = root;
 		for (byte b : bytes) {
 			ByteNode<T> next = node.nextNode(b);
 			if (next == null) {
-				next = factory.create();
+				next = compiler.create();
 				addNextNode(node, b, next);
 			}
 			node = next;
@@ -64,8 +56,7 @@ public class LinkedByteDawgBuilder<T> implements ByteDawgBuilder<T> {
 		return this;
 	}
 
-	@Override
-	public ByteDawgBuilder<T> work(ByteTask<T> task) {
+	public ByteWordSetBuilder<T, R> work(ByteTask<T> task) {
 		Queue<ByteNode<T>> worklist = new LinkedList<>();
 		worklist.addAll(task.init(root));
 		while (!worklist.isEmpty()) {
@@ -138,7 +129,7 @@ public class LinkedByteDawgBuilder<T> implements ByteDawgBuilder<T> {
 	private List<ByteNode<T>> compiled() {
 		Set<ByteNode<T>> visited = new HashSet<>();
 		List<ByteNode<T>> compiled = new LinkedList<>();
-		
+
 		Queue<ByteNode<T>> todo = new LinkedList<>();
 		todo.add(root);
 		while (!todo.isEmpty()) {
@@ -151,22 +142,21 @@ public class LinkedByteDawgBuilder<T> implements ByteDawgBuilder<T> {
 			for (byte b : current.getAlternatives()) {
 				ByteNode<T> nextNode = current.nextNode(b);
 				todo.add(nextNode);
-			}			
+			}
 		}
-		
+
 		return compiled;
 	}
 
-	@Override
-	public ByteDawg<T> build() {
-		NodeResolver<ByteNode<T>> nodes = factory.resolver();
+	public R build() {
+		NodeResolver<ByteNode<T>> nodes = compiler.resolver();
 		for (ByteNode<T> node : postOrdered()) {
 			nodes.compile(node);
 		}
 		for (ByteNode<T> node : compiled()) {
 			nodes.link(node);
 		}
-		return factory.build(nodes.resolve(root));
+		return compiler.build(nodes.resolve(root));
 	}
 
 }

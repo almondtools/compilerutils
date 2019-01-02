@@ -1,10 +1,11 @@
 package net.amygdalum.util.text.linkeddawg;
 
 import net.amygdalum.util.text.ByteDawg;
+import net.amygdalum.util.text.ByteWordGraphCompiler;
 import net.amygdalum.util.text.ByteNode;
 import net.amygdalum.util.text.NodeResolver;
 
-public class ByteClassicDawgFactory<T> implements ByteDawgFactory<T> {
+public class LinkedByteDawgCompiler<T> implements ByteWordGraphCompiler<T, ByteDawg<T>> {
 
 	@Override
 	public ByteNode<T> create() {

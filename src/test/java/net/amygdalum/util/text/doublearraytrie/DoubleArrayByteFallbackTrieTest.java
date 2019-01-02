@@ -213,7 +213,7 @@ public class DoubleArrayByteFallbackTrieTest {
 		byte[] bachelor = "bachelor".getBytes("UTF-8");
 		trie.insert(bachelor, "Bachelor");
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -232,7 +232,7 @@ public class DoubleArrayByteFallbackTrieTest {
 		byte[] jar = "jar".getBytes("UTF-8");
 		trie.insert(jar, "Jar");
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -242,7 +242,7 @@ public class DoubleArrayByteFallbackTrieTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
@@ -258,7 +258,7 @@ public class DoubleArrayByteFallbackTrieTest {
 		byte[] badge = "badge".getBytes("UTF-8");
 		trie.insert(badge, "Badge");
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -268,12 +268,12 @@ public class DoubleArrayByteFallbackTrieTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
@@ -293,7 +293,7 @@ public class DoubleArrayByteFallbackTrieTest {
 		byte[] baby = "baby".getBytes("UTF-8");
 		trie.insert(baby, "Baby");
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -303,19 +303,19 @@ public class DoubleArrayByteFallbackTrieTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
 			.nextNode(badge[3])
 			.nextNode(badge[4])
 			.getAttached(), equalTo("Badge"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(baby[0])
 			.nextNode(baby[1])
 			.nextNode(baby[2])
@@ -330,7 +330,7 @@ public class DoubleArrayByteFallbackTrieTest {
 		byte[] bac = "bac".getBytes("UTF-8");
 		trie.insert(bac, "Bac");
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -340,7 +340,7 @@ public class DoubleArrayByteFallbackTrieTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bac[0])
 			.nextNode(bac[1])
 			.nextNode(bac[2])
@@ -355,7 +355,7 @@ public class DoubleArrayByteFallbackTrieTest {
 		byte[] bac = "bac".getBytes("UTF-8");
 		trie.insert(bac, "Bac");
 
-		((AttachmentAdaptor<String>) trie.asNode()
+		((AttachmentAdaptor<String>) trie.navigator()
 		.nextNode(bachelor[0])
 		.nextNode(bachelor[1])
 		.nextNode(bachelor[2])
@@ -363,12 +363,12 @@ public class DoubleArrayByteFallbackTrieTest {
 		.nextNode(bachelor[4]))
 		.attach("Bache");
 
-		((AttachmentAdaptor<String>) trie.asNode()
+		((AttachmentAdaptor<String>) trie.navigator()
 		.nextNode(bachelor[0])
 		.nextNode(bachelor[1]))
 		.attach("Ba");
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -378,19 +378,19 @@ public class DoubleArrayByteFallbackTrieTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
 			.nextNode(bachelor[3])
 			.nextNode(bachelor[4])
 			.getAttached(), equalTo("Bache"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bac[0])
 			.nextNode(bac[1])
 			.nextNode(bac[2])
 			.getAttached(), equalTo("Bac"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.getAttached(), equalTo("Ba"));

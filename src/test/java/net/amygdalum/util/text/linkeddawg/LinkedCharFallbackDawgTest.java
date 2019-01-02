@@ -8,15 +8,19 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import net.amygdalum.util.text.CharAutomaton;
 import net.amygdalum.util.text.CharDawg;
+import net.amygdalum.util.text.CharFallbackLinks;
+import net.amygdalum.util.text.CharFallbackNavigator;
+import net.amygdalum.util.text.CharWordSetBuilder;
 
 public class LinkedCharFallbackDawgTest {
 
-	private LinkedCharDawgBuilder<String> builder;
+	private CharWordSetBuilder<String, CharDawg<String>> builder;
 
 	@Before
 	public void before() throws Exception {
-		builder = new LinkedCharDawgBuilder<>(new CharFallbackDawgFactory<String>());
+		builder = new CharWordSetBuilder<>(new LinkedCharFallbackDawgCompiler<String>());
 	}
 
 	@Test
@@ -245,7 +249,7 @@ public class LinkedCharFallbackDawgTest {
 			.extend(bachelor, "Bachelor")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -266,7 +270,7 @@ public class LinkedCharFallbackDawgTest {
 			.extend(jar, "Jar")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -276,7 +280,7 @@ public class LinkedCharFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
@@ -294,7 +298,7 @@ public class LinkedCharFallbackDawgTest {
 			.extend(badge, "Badge")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -304,12 +308,12 @@ public class LinkedCharFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
@@ -331,7 +335,7 @@ public class LinkedCharFallbackDawgTest {
 			.extend(baby, "Baby")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -341,19 +345,19 @@ public class LinkedCharFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
 			.nextNode(badge[3])
 			.nextNode(badge[4])
 			.getAttached(), equalTo("Badge"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(baby[0])
 			.nextNode(baby[1])
 			.nextNode(baby[2])
@@ -370,7 +374,7 @@ public class LinkedCharFallbackDawgTest {
 			.extend(bac, "Bac")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -380,11 +384,77 @@ public class LinkedCharFallbackDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bac[0])
 			.nextNode(bac[1])
 			.nextNode(bac[2])
 			.getAttached(), equalTo("Bac"));
 	}
 
+	@Test
+	public void testFallback() throws Exception {
+		CharDawg<String> trie = builder
+			.extend("gat".toCharArray(), "GAT")
+			.extend("cgatggg".toCharArray(), "CGATGGG")
+			.work(new CharFallbackLinks())
+			.build();
+
+		assertThat(trie.navigator()
+			.nextNode('c')
+			.nextNode('g')
+			.nextNode('a')
+			.nextNode('t')
+			.nextNode('g')
+			.nextNode('g')
+			.nextNode('g')
+			.getAttached(), equalTo("CGATGGG"));
+		assertThat(((CharFallbackNavigator<String, ?>) trie.navigator())
+			.nextNode('c')
+			.nextNode('g')
+			.nextNode('a')
+			.nextNode('t')
+			.fallback()
+			.getAttached(), equalTo("GAT"));
+	}
+
+	@Test
+	public void testCursor() throws Exception {
+		CharDawg<String> trie = builder
+			.extend("gat".toCharArray(), "GAT")
+			.extend("cgatggg".toCharArray(), "CGATGGG")
+			.work(new CharFallbackLinks())
+			.build();
+		
+		CharAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept('c'), is(true));
+		assertThat(cursor.accept('g'), is(true));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.accept('t'), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("GAT"));
+		assertThat(cursor.accept('g'), is(true));
+		assertThat(cursor.accept('g'), is(true));
+		assertThat(cursor.accept('g'), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("CGATGGG"));
+	}
+	
+	@Test
+	public void testCursor2() throws Exception {
+		CharDawg<String> trie = builder
+			.extend("gatc".toCharArray(), "GATC")
+			.extend("cgatggg".toCharArray(), "CGATGGG")
+			.work(new CharFallbackLinks())
+			.build();
+		
+		CharAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept('c'), is(true));
+		assertThat(cursor.accept('g'), is(true));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.accept('t'), is(true));
+		assertThat(cursor.accept('c'), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("GATC"));
+	}
+	
 }

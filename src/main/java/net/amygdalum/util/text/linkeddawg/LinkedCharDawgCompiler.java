@@ -1,10 +1,11 @@
 package net.amygdalum.util.text.linkeddawg;
 
 import net.amygdalum.util.text.CharDawg;
+import net.amygdalum.util.text.CharWordGraphCompiler;
 import net.amygdalum.util.text.CharNode;
 import net.amygdalum.util.text.NodeResolver;
 
-public class CharClassicDawgFactory<T> implements CharDawgFactory<T> {
+public class LinkedCharDawgCompiler<T> implements CharWordGraphCompiler<T, CharDawg<T>> {
 
 	@Override
 	public CharNode<T> create() {

@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 
 import net.amygdalum.util.text.CharAutomaton;
 import net.amygdalum.util.text.CharDawg;
+import net.amygdalum.util.text.CharNavigator;
 import net.amygdalum.util.text.CharNode;
 
 /**
@@ -54,8 +55,8 @@ public class LinkedCharDawg<T> implements CharDawg<T> {
 	}
 
 	@Override
-	public CharNode<T> asNode() {
-		return root;
+	public CharNavigator<T, ?> navigator() {
+		return new LinkedCharNavigator<>(root);
 	}
 
 	private static class Cursor<S> implements CharAutomaton<S> {

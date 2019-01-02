@@ -1,5 +1,6 @@
 package net.amygdalum.util.text.linkeddawg;
 
+import static net.amygdalum.util.text.CharUtils.revert;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -9,14 +10,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import net.amygdalum.util.text.CharDawg;
+import net.amygdalum.util.text.CharWordSetBuilder;
 
 public class LinkedCharDawgTest {
 
-	private LinkedCharDawgBuilder<String> builder;
+	private CharWordSetBuilder<String, CharDawg<String>> builder;
 
 	@Before
 	public void before() throws Exception {
-		builder = new LinkedCharDawgBuilder<>(new CharClassicDawgFactory<String>());
+		builder = new CharWordSetBuilder<>(new LinkedCharDawgCompiler<String>());
 	}
 
 	@Test
@@ -245,7 +247,7 @@ public class LinkedCharDawgTest {
 			.extend(bachelor, "Bachelor")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -266,7 +268,7 @@ public class LinkedCharDawgTest {
 			.extend(jar, "Jar")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -276,7 +278,7 @@ public class LinkedCharDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
@@ -294,7 +296,7 @@ public class LinkedCharDawgTest {
 			.extend(badge, "Badge")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -304,12 +306,12 @@ public class LinkedCharDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
@@ -331,7 +333,7 @@ public class LinkedCharDawgTest {
 			.extend(baby, "Baby")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -341,19 +343,19 @@ public class LinkedCharDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(jar[0])
 			.nextNode(jar[1])
 			.nextNode(jar[2])
 			.getAttached(), equalTo("Jar"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(badge[0])
 			.nextNode(badge[1])
 			.nextNode(badge[2])
 			.nextNode(badge[3])
 			.nextNode(badge[4])
 			.getAttached(), equalTo("Badge"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(baby[0])
 			.nextNode(baby[1])
 			.nextNode(baby[2])
@@ -370,7 +372,7 @@ public class LinkedCharDawgTest {
 			.extend(bac, "Bac")
 			.build();
 
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
 			.nextNode(bachelor[1])
 			.nextNode(bachelor[2])
@@ -380,11 +382,24 @@ public class LinkedCharDawgTest {
 			.nextNode(bachelor[6])
 			.nextNode(bachelor[7])
 			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.asNode()
+		assertThat(trie.navigator()
 			.nextNode(bac[0])
 			.nextNode(bac[1])
 			.nextNode(bac[2])
 			.getAttached(), equalTo("Bac"));
+	}
+
+	@Test
+	public void testReversedStrings() throws Exception {
+		CharDawg<String> trie = builder
+			.extend(revert("And God called the firmament Heaven".toCharArray()), "Heaven")
+			.extend(revert("Let the waters under the heaven be gathered together unto one place".toCharArray()), "Water")
+			.extend(revert("And God called the dry land Earth".toCharArray()), "Earth")
+			.build();
+		
+		assertThat(trie.find(revert("And God called the firmament Heaven".toCharArray())), equalTo("Heaven"));
+		assertThat(trie.find(revert("Let the waters under the heaven be gathered together unto one place".toCharArray())), equalTo("Water"));
+		assertThat(trie.find(revert("And God called the dry land Earth".toCharArray())), equalTo("Earth"));
 	}
 
 }
