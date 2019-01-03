@@ -1,6 +1,5 @@
 package net.amygdalum.util.text.doublearraytrie;
 
-import static java.lang.Math.min;
 import static net.amygdalum.util.text.doublearraytrie.Arrays.NO_BYTES;
 import static net.amygdalum.util.text.doublearraytrie.Arrays.expand;
 import static net.amygdalum.util.text.doublearraytrie.Arrays.join;
@@ -13,6 +12,7 @@ import java.util.NoSuchElementException;
 import net.amygdalum.util.text.AttachmentAdaptor;
 import net.amygdalum.util.text.ByteAutomaton;
 import net.amygdalum.util.text.ByteNavigator;
+import net.amygdalum.util.text.ByteTrie;
 import net.amygdalum.util.text.WordSetNavigationException;
 
 /**
@@ -22,7 +22,7 @@ import net.amygdalum.util.text.WordSetNavigationException;
  * 
  * @param <T> the type of attachment storable in each graph node
  */
-public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
+public class DoubleArrayByteCompactTrie<T> implements ByteTrie<T> {
 
 	private static final int INITIAL_SIZE = 1024;
 
@@ -47,188 +47,7 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 		return ((int) b) + 129;
 	}
 
-	@Override
-	public void insert(byte[] bytes, T out) {
-		int state = 1;
-		if (base[state] == 0) {
-			base[state] = 1;
-			alts[state] = new byte[0];
-		}
-		for (int i = 0; i < bytes.length; i++) {
-			int statebase = base[state];
-			if (statebase < 0) {
-				byte[] tailbytes = tail[state];
-				if (verify(bytes, i, tailbytes)) {
-					//already inserted nothing todo
-				} else {
-					int oldpointer = state;
-					int maxprefixlength = min(bytes.length - i, tailbytes.length);
-					int taili = 0;
-					while (taili < maxprefixlength) {
-						byte b = bytes[taili + i];
-						if (b != tailbytes[taili]) {
-							break;
-						}
-						int nextbase = xcheck(b);
-						base[state] = nextbase;
-						int next = nextbase + key(b);
-						check[next] = state;
-						addAlt(state, b);
-						state = next;
-						taili++;
-					}
-					i += taili;
-
-					boolean bytesremaining = i < bytes.length;
-					boolean tailbytesremaining = taili < tailbytes.length;
-					byte[] nextbytes;
-					if (bytesremaining && tailbytesremaining) {
-						nextbytes = new byte[] {bytes[i], tailbytes[taili]};
-					} else if (bytesremaining) {
-						nextbytes = new byte[] {bytes[i]};
-					} else if (tailbytesremaining) {
-						nextbytes = new byte[] {tailbytes[taili]};
-					} else {
-						nextbytes = new byte[0];
-					}
-
-					int nextbase = xcheck(nextbytes);
-					base[state] = nextbase;
-
-					if (tailbytesremaining) {
-						byte tb = tailbytes[taili];
-						int tailnext = nextbase + key(tb);
-						check[tailnext] = state;
-						addAlt(state, tb);
-						base[tailnext] = STOP;
-						tail[tailnext] = suffix(tail[oldpointer], taili + 1);
-						attachments[tailnext] = attachments[oldpointer];
-
-						tail[oldpointer] = null;
-						attachments[oldpointer] = null;
-					} else {
-						tail[state] = NO_BYTES;
-						attachments[state] = attachments[oldpointer];
-						if (state != oldpointer) {
-							tail[oldpointer] = null;
-							attachments[oldpointer] = null;
-						}
-					}
-
-					if (bytesremaining) {
-						byte rb = bytes[i];
-						int insnext = nextbase + key(rb);
-						check[insnext] = state;
-						addAlt(state, rb);
-						base[insnext] = STOP;
-						tail[insnext] = suffix(bytes, i + 1);
-						attachments[insnext] = out;
-					} else {
-						tail[state] = NO_BYTES;
-						attachments[state] = out;
-					}
-				}
-				return;
-			}
-			byte b = bytes[i];
-			int next = statebase + key(b);
-			if (next >= check.length) {
-				check = expand(check, next);
-				base = expand(base, next);
-				tail = expand(tail, next);
-				alts = expand(alts, next);
-				attachments = expand(attachments, next);
-			}
-			if (check[next] == 0) {
-				check[next] = state;
-				addAlt(state, b);
-				base[next] = STOP;
-				tail[next] = suffix(bytes, i + 1);
-				attachments[next] = out;
-				return;
-			} else if (check[next] != state) {
-				int collidingstate = check[next];
-
-				byte[] altsCurrent = alts[state];
-				byte[] altsColliding = alts[collidingstate];
-
-				if (altsCurrent.length + 1 <= altsColliding.length || check[state] == collidingstate) {
-					int newbase = xcheck(join(altsCurrent, b));
-					remap(state, newbase, altsCurrent);
-					next = base[state] + key(b);
-				} else {
-					int newbase = xcheck(altsColliding);
-					remap(collidingstate, newbase, altsColliding);
-				}
-
-				check[next] = state;
-				addAlt(state, b);
-				base[next] = STOP;
-				tail[next] = suffix(bytes, i + 1);
-				attachments[next] = out;
-				return;
-			}
-			state = next;
-		}
-		if (tail[state] != null && tail[state].length > 0) {
-			int oldpointer = state;
-			byte[] tailbytes = tail[state];
-			int taili = 0;
-			byte tb = tailbytes[taili];
-			int nextbase = xcheck(tb);
-			base[state] = nextbase;
-
-			int tailnext = nextbase + key(tb);
-			check[tailnext] = state;
-			addAlt(state, tb);
-			base[tailnext] = STOP;
-			tail[tailnext] = suffix(tail[oldpointer], taili + 1);
-			attachments[tailnext] = attachments[oldpointer];
-
-			tail[state] = null;
-			attachments[state] = null;
-		}
-		tail[state] = NO_BYTES;
-		attachments[state] = out;
-	}
-
-	private void addAlt(int state, byte b) {
-		byte[] bytes = alts[state];
-		if (bytes != null) {
-			alts[state] = join(bytes, b);
-		} else {
-			alts[state] = new byte[] {b};
-		}
-	}
-
-	private void remap(int remap, int newbase, byte[] alternatives) {
-		int remapbase = base[remap];
-
-		base[remap] = newbase;
-
-		for (byte ab : alternatives) {
-			int abremap = remapbase + key(ab);
-			int abnew = newbase + key(ab);
-			base[abnew] = base[abremap];
-			check[abnew] = check[abremap];
-			tail[abnew] = tail[abremap];
-			alts[abnew] = alts[abremap];
-			attachments[abnew] = attachments[abremap];
-			if (base[abremap] > 0) {
-				byte[] altsremap = alts[abremap];
-				for (byte rb : altsremap) {
-					check[base[abremap] + key(rb)] = abnew;
-				}
-			}
-			base[abremap] = 0;
-			check[abremap] = 0;
-			tail[abremap] = null;
-			alts[abremap] = null;
-			attachments[abremap] = null;
-		}
-	}
-
-	private int xcheck(byte... input) {
+	private int freebase(byte... input) {
 		int nextbase = 0;
 		nextState: while (nextbase >= 0) {
 			nextbase++;
@@ -322,7 +141,7 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 			assert trie.base[state] == 0 && trie.alts[state] == null;
 			int[] nexts = new int[alternatives.length];
 
-			int newbase = freebase(alternatives);
+			int newbase = trie.freebase(alternatives);
 			trie.base[state] = newbase;
 			trie.alts[state] = Arrays.sorted(alternatives);
 			for (int i = 0; i < alternatives.length; i++) {
@@ -350,32 +169,6 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 
 		public void terminate(int state) {
 			trie.base[state] = STOP;
-		}
-
-		private int freebase(byte... input) {
-			int nextbase = 0;
-			nextState: while (nextbase >= 0) {
-				nextbase++;
-				for (byte b : input) {
-					int next = nextbase + key(b);
-					ensureSufficientLength(next);
-					if (trie.check[next] != 0) {
-						continue nextState;
-					}
-				}
-				return nextbase;
-			}
-			return -1;
-		}
-
-		private void ensureSufficientLength(int next) {
-			if (next >= trie.check.length) {
-				trie.check = expand(trie.check, next);
-				trie.base = expand(trie.base, next);
-				trie.tail = expand(trie.tail, next);
-				trie.alts = expand(trie.alts, next);
-				trie.attachments = expand(trie.attachments, next);
-			}
 		}
 
 		public DoubleArrayByteCompactTrie<T> build() {
@@ -440,7 +233,7 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 				int taili = 0;
 				while (taili < tailpos) {
 					byte b = activeTail[taili];
-					int nextbase = xcheck(b);
+					int nextbase = freebase(b);
 					base[state] = nextbase;
 					int next = nextbase + key(b);
 					check[next] = state;
@@ -449,7 +242,7 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 					taili++;
 				}
 
-				int nextbase = xcheck(activeTail[taili]);
+				int nextbase = freebase(activeTail[taili]);
 				base[state] = nextbase;
 
 				byte tb = activeTail[taili];
@@ -471,7 +264,7 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 					byte[] tailbytes = tail[state];
 					int taili = 0;
 					byte tb = tailbytes[taili];
-					int nextbase = xcheck(tb);
+					int nextbase = freebase(tb);
 					base[state] = nextbase;
 
 					int tailnext = nextbase + key(tb);
@@ -486,6 +279,15 @@ public class DoubleArrayByteCompactTrie<T> implements DoubleArrayByteTrie<T> {
 				}
 				tail[state] = NO_BYTES;
 				attachments[state] = out;
+			}
+		}
+
+		private void addAlt(int state, byte b) {
+			byte[] bytes = alts[state];
+			if (bytes != null) {
+				alts[state] = join(bytes, b);
+			} else {
+				alts[state] = new byte[] {b};
 			}
 		}
 

@@ -1,5 +1,6 @@
 package net.amygdalum.util.text.doublearraytrie;
 
+import static net.amygdalum.util.text.CharUtils.revert;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -8,21 +9,23 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import net.amygdalum.util.text.AttachmentAdaptor;
-import net.amygdalum.util.text.doublearraytrie.DoubleArrayCharCompactTrie;
+import net.amygdalum.util.text.CharTrie;
+import net.amygdalum.util.text.CharWordSetBuilder;
 
 public class DoubleArrayCharCompactTrieTest {
 
-	private DoubleArrayCharCompactTrie<String> trie;
+	private CharWordSetBuilder<String, CharTrie<String>> builder;
 
 	@Before
 	public void before() throws Exception {
-		trie = new DoubleArrayCharCompactTrie<>();
+		builder = new CharWordSetBuilder<>(new DoubleArrayCharCompactTrieCompiler<String>());
 	}
 
 	@Test
 	public void testSingleNode() throws Exception {
-		trie.insert("bachelor".toCharArray(), "Bachelor");
+		CharTrie<String> trie = builder
+			.extend("bachelor".toCharArray(), "Bachelor")
+			.build();
 
 		assertThat(trie.contains("bachelor".toCharArray()), is(true));
 		assertThat(trie.find("bachelor".toCharArray()), equalTo("Bachelor"));
@@ -33,8 +36,10 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testMultipleNonCollidingNodes() throws Exception {
-		trie.insert("bachelor".toCharArray(), "Bachelor");
-		trie.insert("jar".toCharArray(), "Jar");
+		CharTrie<String> trie = builder
+			.extend("bachelor".toCharArray(), "Bachelor")
+			.extend("jar".toCharArray(), "Jar")
+			.build();
 
 		assertThat(trie.find("bachelor".toCharArray()), equalTo("Bachelor"));
 		assertThat(trie.contains("jar".toCharArray()), is(true));
@@ -43,9 +48,11 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testMultipleCollidingNodes() throws Exception {
-		trie.insert("bachelor".toCharArray(), "Bachelor");
-		trie.insert("jar".toCharArray(), "Jar");
-		trie.insert("badge".toCharArray(), "Badge");
+		CharTrie<String> trie = builder
+			.extend("bachelor".toCharArray(), "Bachelor")
+			.extend("jar".toCharArray(), "Jar")
+			.extend("badge".toCharArray(), "Badge")
+			.build();
 
 		assertThat(trie.find("bachelor".toCharArray()), equalTo("Bachelor"));
 		assertThat(trie.find("jar".toCharArray()), equalTo("Jar"));
@@ -55,10 +62,12 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testMultipleMoreCollidingNodes() throws Exception {
-		trie.insert("bachelor".toCharArray(), "Bachelor");
-		trie.insert("jar".toCharArray(), "Jar");
-		trie.insert("badge".toCharArray(), "Badge");
-		trie.insert("baby".toCharArray(), "Baby");
+		CharTrie<String> trie = builder
+			.extend("bachelor".toCharArray(), "Bachelor")
+			.extend("jar".toCharArray(), "Jar")
+			.extend("badge".toCharArray(), "Badge")
+			.extend("baby".toCharArray(), "Baby")
+			.build();
 
 		assertThat(trie.find("bachelor".toCharArray()), equalTo("Bachelor"));
 		assertThat(trie.find("jar".toCharArray()), equalTo("Jar"));
@@ -69,8 +78,10 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testMultipleSubsumingNodes() throws Exception {
-		trie.insert("bac".toCharArray(), "Bac");
-		trie.insert("bachelor".toCharArray(), "Bachelor");
+		CharTrie<String> trie = builder
+			.extend("bac".toCharArray(), "Bac")
+			.extend("bachelor".toCharArray(), "Bachelor")
+			.build();
 
 		assertThat(trie.find("bachelor".toCharArray()), equalTo("Bachelor"));
 		assertThat(trie.find("bac".toCharArray()), equalTo("Bac"));
@@ -78,8 +89,10 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testMultipleSubsumedNodes() throws Exception {
-		trie.insert("bachelor".toCharArray(), "Bachelor");
-		trie.insert("bac".toCharArray(), "Bac");
+		CharTrie<String> trie = builder
+			.extend("bachelor".toCharArray(), "Bachelor")
+			.extend("bac".toCharArray(), "Bac")
+			.build();
 
 		assertThat(trie.find("bachelor".toCharArray()), equalTo("Bachelor"));
 		assertThat(trie.find("bac".toCharArray()), equalTo("Bac"));
@@ -87,10 +100,12 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testMultipleSubsumedNodes2() throws Exception {
-		trie.insert("abcd".toCharArray(), "ABCD");
-		trie.insert("ab".toCharArray(), "AB");
-		trie.insert("bc".toCharArray(), "BC");
-		trie.insert("cd".toCharArray(), "CD");
+		CharTrie<String> trie = builder
+			.extend("abcd".toCharArray(), "ABCD")
+			.extend("ab".toCharArray(), "AB")
+			.extend("bc".toCharArray(), "BC")
+			.extend("cd".toCharArray(), "CD")
+			.build();
 
 		assertThat(trie.find("abcd".toCharArray()), equalTo("ABCD"));
 		assertThat(trie.find("ab".toCharArray()), equalTo("AB"));
@@ -100,9 +115,11 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testMultipleSubsumedNodes3() throws Exception {
-		trie.insert("aaa".toCharArray(), "AAA");
-		trie.insert("aa".toCharArray(), "AA");
-		trie.insert("a".toCharArray(), "A");
+		CharTrie<String> trie = builder
+			.extend("aaa".toCharArray(), "AAA")
+			.extend("aa".toCharArray(), "AA")
+			.extend("a".toCharArray(), "A")
+			.build();
 
 		assertThat(trie.find("aaa".toCharArray()), equalTo("AAA"));
 		assertThat(trie.find("aa".toCharArray()), equalTo("AA"));
@@ -111,8 +128,10 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testAttachments() throws Exception {
-		trie.insert("abc".toCharArray(), "ABC");
-		trie.insert("bcd".toCharArray(), "BCD");
+		CharTrie<String> trie = builder
+			.extend("abc".toCharArray(), "ABC")
+			.extend("bcd".toCharArray(), "BCD")
+			.build();
 
 		assertThat(trie.find("abc".toCharArray()), equalTo("ABC"));
 		assertThat(trie.find("bcd".toCharArray()), equalTo("BCD"));
@@ -124,9 +143,11 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testAttachments2() throws Exception {
-		trie.insert("".toCharArray(), "");
-		trie.insert("a".toCharArray(), "A");
-		trie.insert("b".toCharArray(), "B");
+		CharTrie<String> trie = builder
+			.extend("".toCharArray(), "")
+			.extend("a".toCharArray(), "A")
+			.extend("b".toCharArray(), "B")
+			.build();
 
 		assertThat(trie.find("".toCharArray()), equalTo(""));
 		assertThat(trie.find("a".toCharArray()), equalTo("A"));
@@ -136,8 +157,10 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testAttachments3() throws Exception {
-		trie.insert("ab".toCharArray(), "AB");
-		trie.insert("aa".toCharArray(), "AA");
+		CharTrie<String> trie = builder
+			.extend("ab".toCharArray(), "AB")
+			.extend("aa".toCharArray(), "AA")
+			.build();
 
 		assertThat(trie.find("ab".toCharArray()), equalTo("AB"));
 		assertThat(trie.find("aa".toCharArray()), equalTo("AA"));
@@ -146,13 +169,15 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testAttachments4() throws Exception {
-		trie.insert("bb".toCharArray(), "BB");
-		trie.insert("ba".toCharArray(), "BA");
-		trie.insert("bbc".toCharArray(), "BBC");
-		trie.insert("bbd".toCharArray(), "BBD");
-		trie.insert("bbf".toCharArray(), "BBF");
-		trie.insert("bbg".toCharArray(), "BBG");
-		trie.insert("bba".toCharArray(), "BBA");
+		CharTrie<String> trie = builder
+			.extend("bb".toCharArray(), "BB")
+			.extend("ba".toCharArray(), "BA")
+			.extend("bbc".toCharArray(), "BBC")
+			.extend("bbd".toCharArray(), "BBD")
+			.extend("bbf".toCharArray(), "BBF")
+			.extend("bbg".toCharArray(), "BBG")
+			.extend("bba".toCharArray(), "BBA")
+			.build();
 
 		assertThat(trie.find("bb".toCharArray()), equalTo("BB"));
 		assertThat(trie.find("ba".toCharArray()), equalTo("BA"));
@@ -165,10 +190,12 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testAttachments5() throws Exception {
-		trie.insert("cc".toCharArray(), "CC");
-		trie.insert("ca".toCharArray(), "CA");
-		trie.insert("ac".toCharArray(), "AC");
-		trie.insert("aa".toCharArray(), "AA");
+		CharTrie<String> trie = builder
+			.extend("cc".toCharArray(), "CC")
+			.extend("ca".toCharArray(), "CA")
+			.extend("ac".toCharArray(), "AC")
+			.extend("aa".toCharArray(), "AA")
+			.build();
 
 		assertThat(trie.find("cc".toCharArray()), equalTo("CC"));
 		assertThat(trie.find("ca".toCharArray()), equalTo("CA"));
@@ -178,30 +205,36 @@ public class DoubleArrayCharCompactTrieTest {
 
 	@Test
 	public void testLargeCharacterSpace() throws Exception {
-		trie.insert("\u9999".toCharArray(), "U9999");
-		trie.insert("\u0000".toCharArray(), "U0000");
-		
+		CharTrie<String> trie = builder
+			.extend("\u9999".toCharArray(), "U9999")
+			.extend("\u0000".toCharArray(), "U0000")
+			.build();
+
 		assertThat(trie.find("\u9999".toCharArray()), equalTo("U9999"));
 		assertThat(trie.find("\u0000".toCharArray()), equalTo("U0000"));
 	}
-	
+
 	@Test
 	public void testDoubleSubsumedNodes() throws Exception {
-		trie.insert(new StringBuilder("and wood to fire").reverse().toString().toCharArray(), "and wood to fire");
-		trie.insert(new StringBuilder("Then shalt thou enquire").reverse().toString().toCharArray(), "Then shalt thou enquire");
-		trie.insert(new StringBuilder("fire").reverse().toString().toCharArray(), "fire");
+		CharTrie<String> trie = builder
+			.extend(new StringBuilder("and wood to fire").reverse().toString().toCharArray(), "and wood to fire")
+			.extend(new StringBuilder("Then shalt thou enquire").reverse().toString().toCharArray(), "Then shalt thou enquire")
+			.extend(new StringBuilder("fire").reverse().toString().toCharArray(), "fire")
+			.build();
 
 		assertThat(trie.find(new StringBuilder("and wood to fire").reverse().toString().toCharArray()), equalTo("and wood to fire"));
 		assertThat(trie.find(new StringBuilder("Then shalt thou enquire").reverse().toString().toCharArray()), equalTo("Then shalt thou enquire"));
 		assertThat(trie.find(new StringBuilder("fire").reverse().toString().toCharArray()), equalTo("fire"));
 	}
-		
+
 	@Test
 	public void testStrings() throws Exception {
 		String a = (char) 0 + "a";
 		String b = (char) 0 + "b";
-		trie.insert(a.toCharArray(), "A");
-		trie.insert(b.toCharArray(), "B");
+		CharTrie<String> trie = builder
+			.extend(a.toCharArray(), "A")
+			.extend(b.toCharArray(), "B")
+			.build();
 
 		assertThat(trie.find(a.toCharArray()), equalTo("A"));
 		assertThat(trie.find(b.toCharArray()), equalTo("B"));
@@ -210,7 +243,9 @@ public class DoubleArrayCharCompactTrieTest {
 	@Test
 	public void testAsNodeSingleNode() throws Exception {
 		char[] bachelor = "bachelor".toCharArray();
-		trie.insert(bachelor, "Bachelor");
+		CharTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -227,9 +262,11 @@ public class DoubleArrayCharCompactTrieTest {
 	@Test
 	public void testAsNodeMutlipleNonCollidingNodes() throws Exception {
 		char[] bachelor = "bachelor".toCharArray();
-		trie.insert(bachelor, "Bachelor");
 		char[] jar = "jar".toCharArray();
-		trie.insert(jar, "Jar");
+		CharTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(jar, "Jar")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -251,11 +288,13 @@ public class DoubleArrayCharCompactTrieTest {
 	@Test
 	public void testAsNodeMultipleCollidingNodes() throws Exception {
 		char[] bachelor = "bachelor".toCharArray();
-		trie.insert(bachelor, "Bachelor");
 		char[] jar = "jar".toCharArray();
-		trie.insert(jar, "Jar");
 		char[] badge = "badge".toCharArray();
-		trie.insert(badge, "Badge");
+		CharTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(jar, "Jar")
+			.extend(badge, "Badge")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -284,13 +323,15 @@ public class DoubleArrayCharCompactTrieTest {
 	@Test
 	public void testAsNodeMultipleMoreCollidingNodes() throws Exception {
 		char[] bachelor = "bachelor".toCharArray();
-		trie.insert(bachelor, "Bachelor");
 		char[] jar = "jar".toCharArray();
-		trie.insert(jar, "Jar");
 		char[] badge = "badge".toCharArray();
-		trie.insert(badge, "Badge");
 		char[] baby = "baby".toCharArray();
-		trie.insert(baby, "Baby");
+		CharTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(jar, "Jar")
+			.extend(badge, "Badge")
+			.extend(baby, "Baby")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -325,9 +366,11 @@ public class DoubleArrayCharCompactTrieTest {
 	@Test
 	public void testAsNodeMultipleSubsumedNodes() throws Exception {
 		char[] bachelor = "bachelor".toCharArray();
-		trie.insert(bachelor, "Bachelor");
 		char[] bac = "bac".toCharArray();
-		trie.insert(bac, "Bac");
+		CharTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(bac, "Bac")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -346,53 +389,17 @@ public class DoubleArrayCharCompactTrieTest {
 			.getAttached(), equalTo("Bac"));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void testAsNodeMultipleReattachments() throws Exception {
-		char[] bachelor = "bachelor".toCharArray();
-		trie.insert(bachelor, "Bachelor");
-		char[] bac = "bac".toCharArray();
-		trie.insert(bac, "Bac");
-
-		((AttachmentAdaptor<String>) trie.navigator()
-		.nextNode(bachelor[0])
-		.nextNode(bachelor[1])
-		.nextNode(bachelor[2])
-		.nextNode(bachelor[3])
-		.nextNode(bachelor[4]))
-		.attach("Bache");
-
-		((AttachmentAdaptor<String>) trie.navigator()
-		.nextNode(bachelor[0])
-		.nextNode(bachelor[1]))
-		.attach("Ba");
-
-		assertThat(trie.navigator()
-			.nextNode(bachelor[0])
-			.nextNode(bachelor[1])
-			.nextNode(bachelor[2])
-			.nextNode(bachelor[3])
-			.nextNode(bachelor[4])
-			.nextNode(bachelor[5])
-			.nextNode(bachelor[6])
-			.nextNode(bachelor[7])
-			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.navigator()
-			.nextNode(bachelor[0])
-			.nextNode(bachelor[1])
-			.nextNode(bachelor[2])
-			.nextNode(bachelor[3])
-			.nextNode(bachelor[4])
-			.getAttached(), equalTo("Bache"));
-		assertThat(trie.navigator()
-			.nextNode(bac[0])
-			.nextNode(bac[1])
-			.nextNode(bac[2])
-			.getAttached(), equalTo("Bac"));
-		assertThat(trie.navigator()
-			.nextNode(bachelor[0])
-			.nextNode(bachelor[1])
-			.getAttached(), equalTo("Ba"));
+	public void testReversedStrings() throws Exception {
+		CharTrie<String> trie = builder
+			.extend(revert("And God called the firmament Heaven".toCharArray()), "Heaven")
+			.extend(revert("Let the waters under the heaven be gathered together unto one place".toCharArray()), "Water")
+			.extend(revert("And God called the dry land Earth".toCharArray()), "Earth")
+			.build();
+		
+		assertThat(trie.find(revert("And God called the firmament Heaven".toCharArray())), equalTo("Heaven"));
+		assertThat(trie.find(revert("Let the waters under the heaven be gathered together unto one place".toCharArray())), equalTo("Water"));
+		assertThat(trie.find(revert("And God called the dry land Earth".toCharArray())), equalTo("Earth"));
 	}
 
 }

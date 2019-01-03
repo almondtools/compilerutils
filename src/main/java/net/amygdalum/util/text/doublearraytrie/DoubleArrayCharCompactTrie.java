@@ -1,6 +1,5 @@
 package net.amygdalum.util.text.doublearraytrie;
 
-import static java.lang.Math.min;
 import static net.amygdalum.util.text.CharUtils.charToString;
 import static net.amygdalum.util.text.doublearraytrie.Arrays.NO_CHARS;
 import static net.amygdalum.util.text.doublearraytrie.Arrays.expand;
@@ -14,6 +13,7 @@ import java.util.NoSuchElementException;
 import net.amygdalum.util.text.AttachmentAdaptor;
 import net.amygdalum.util.text.CharAutomaton;
 import net.amygdalum.util.text.CharNavigator;
+import net.amygdalum.util.text.CharTrie;
 import net.amygdalum.util.text.WordSetNavigationException;
 
 /**
@@ -23,7 +23,7 @@ import net.amygdalum.util.text.WordSetNavigationException;
  * 
  * @param <T> the type of attachment storable in each graph node
  */
-public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
+public class DoubleArrayCharCompactTrie<T> implements CharTrie<T> {
 
 	private static final int INITIAL_SIZE = 1024;
 
@@ -48,187 +48,7 @@ public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
 		return (int) b + 1;
 	}
 
-	public void insert(char[] chars, T out) {
-		int state = 1;
-		if (base[state] == 0) {
-			base[state] = 1;
-			alts[state] = new char[0];
-		}
-		for (int i = 0; i < chars.length; i++) {
-			int statebase = base[state];
-			if (statebase < 0) {
-				char[] tailchars = tail[state];
-				if (verify(chars, i, tailchars)) {
-					//already inserted nothing todo
-				} else {
-					int oldpointer = state;
-					int maxprefixlength = min(chars.length - i, tailchars.length);
-					int taili = 0;
-					while (taili < maxprefixlength) {
-						char c = chars[taili + i];
-						if (c != tailchars[taili]) {
-							break;
-						}
-						int nextbase = xcheck(c);
-						base[state] = nextbase;
-						int next = nextbase + key(c);
-						check[next] = state;
-						addAlt(state, c);
-						state = next;
-						taili++;
-					}
-					i += taili;
-
-					boolean charsremaining = i < chars.length;
-					boolean tailcharsremaining = taili < tailchars.length;
-					char[] nextchars;
-					if (charsremaining && tailcharsremaining) {
-						nextchars = new char[] {chars[i], tailchars[taili]};
-					} else if (charsremaining) {
-						nextchars = new char[] {chars[i]};
-					} else if (tailcharsremaining) {
-						nextchars = new char[] {tailchars[taili]};
-					} else {
-						nextchars = new char[0];
-					}
-
-					int nextbase = xcheck(nextchars);
-					base[state] = nextbase;
-
-					if (tailcharsremaining) {
-						char tc = tailchars[taili];
-						int tailnext = nextbase + key(tc);
-						check[tailnext] = state;
-						addAlt(state, tc);
-						base[tailnext] = STOP;
-						tail[tailnext] = suffix(tail[oldpointer], taili + 1);
-						attachments[tailnext] = attachments[oldpointer];
-
-						tail[oldpointer] = null;
-						attachments[oldpointer] = null;
-					} else {
-						tail[state] = NO_CHARS;
-						attachments[state] = attachments[oldpointer];
-						if (state != oldpointer) {
-							tail[oldpointer] = null;
-							attachments[oldpointer] = null;
-						}
-					}
-
-					if (charsremaining) {
-						char rc = chars[i];
-						int insnext = nextbase + key(rc);
-						check[insnext] = state;
-						addAlt(state, rc);
-						base[insnext] = STOP;
-						tail[insnext] = suffix(chars, i + 1);
-						attachments[insnext] = out;
-					} else {
-						tail[state] = NO_CHARS;
-						attachments[state] = out;
-					}
-				}
-				return;
-			}
-			char c = chars[i];
-			int next = statebase + key(c);
-			if (next >= check.length) {
-				check = expand(check, next);
-				base = expand(base, next);
-				tail = expand(tail, next);
-				alts = expand(alts, next);
-				attachments = expand(attachments, next);
-			}
-			if (check[next] == 0) {
-				check[next] = state;
-				addAlt(state, c);
-				base[next] = STOP;
-				tail[next] = suffix(chars, i + 1);
-				attachments[next] = out;
-				return;
-			} else if (check[next] != state) {
-				int collidingstate = check[next];
-
-				char[] altsCurrent = alts[state];
-				char[] altsColliding = alts[collidingstate];
-
-				if (altsCurrent.length + 1 <= altsColliding.length || check[state] == collidingstate) {
-					int newbase = xcheck(join(altsCurrent, c));
-					remap(state, newbase, altsCurrent);
-					next = base[state] + key(c);
-				} else {
-					int newbase = xcheck(altsColliding);
-					remap(collidingstate, newbase, altsColliding);
-				}
-
-				check[next] = state;
-				addAlt(state, c);
-				base[next] = STOP;
-				tail[next] = suffix(chars, i + 1);
-				attachments[next] = out;
-				return;
-			}
-			state = next;
-		}
-		if (tail[state] != null && tail[state].length > 0) {
-			int oldpointer = state;
-			char[] tailchars = tail[state];
-			int taili = 0;
-			char tc = tailchars[taili];
-			int nextbase = xcheck(tc);
-			base[state] = nextbase;
-
-			int tailnext = nextbase + key(tc);
-			check[tailnext] = state;
-			addAlt(state, tc);
-			base[tailnext] = STOP;
-			tail[tailnext] = suffix(tail[oldpointer], taili + 1);
-			attachments[tailnext] = attachments[oldpointer];
-
-			tail[state] = null;
-			attachments[state] = null;
-		}
-		tail[state] = NO_CHARS;
-		attachments[state] = out;
-	}
-
-	private void addAlt(int state, char c) {
-		char[] chars = alts[state];
-		if (chars != null) {
-			alts[state] = join(chars, c);
-		} else {
-			alts[state] = new char[] {c};
-		}
-	}
-
-	private void remap(int remap, int newbase, char[] alternatives) {
-		int remapbase = base[remap];
-
-		base[remap] = newbase;
-
-		for (char ac : alternatives) {
-			int abremap = remapbase + key(ac);
-			int abnew = newbase + key(ac);
-			base[abnew] = base[abremap];
-			check[abnew] = check[abremap];
-			tail[abnew] = tail[abremap];
-			alts[abnew] = alts[abremap];
-			attachments[abnew] = attachments[abremap];
-			if (base[abremap] > 0) {
-				char[] altsremap = alts[abremap];
-				for (char rc : altsremap) {
-					check[base[abremap] + key(rc)] = abnew;
-				}
-			}
-			base[abremap] = 0;
-			check[abremap] = 0;
-			tail[abremap] = null;
-			alts[abremap] = null;
-			attachments[abremap] = null;
-		}
-	}
-
-	private int xcheck(char... input) {
+	private int freebase(char... input) {
 		int nextbase = 0;
 		nextState: while (nextbase >= 0) {
 			nextbase++;
@@ -322,7 +142,7 @@ public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
 			assert trie.base[state] == 0 && trie.alts[state] == null;
 			int[] nexts = new int[alternatives.length];
 
-			int newbase = freebase(alternatives);
+			int newbase = trie.freebase(alternatives);
 			trie.base[state] = newbase;
 			trie.alts[state] = Arrays.sorted(alternatives);
 			for (int i = 0; i < alternatives.length; i++) {
@@ -350,32 +170,6 @@ public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
 
 		public void terminate(int state) {
 			trie.base[state] = STOP;
-		}
-
-		private int freebase(char... input) {
-			int nextbase = 0;
-			nextState: while (nextbase >= 0) {
-				nextbase++;
-				for (char c : input) {
-					int next = nextbase + key(c);
-					ensureSufficientLength(next);
-					if (trie.check[next] != 0) {
-						continue nextState;
-					}
-				}
-				return nextbase;
-			}
-			return -1;
-		}
-
-		private void ensureSufficientLength(int next) {
-			if (next >= trie.check.length) {
-				trie.check = expand(trie.check, next);
-				trie.base = expand(trie.base, next);
-				trie.tail = expand(trie.tail, next);
-				trie.alts = expand(trie.alts, next);
-				trie.attachments = expand(trie.attachments, next);
-			}
 		}
 
 		public DoubleArrayCharCompactTrie<T> build() {
@@ -440,7 +234,7 @@ public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
 				int taili = 0;
 				while (taili < tailpos) {
 					char c = activeTail[taili];
-					int nextbase = xcheck(c);
+					int nextbase = freebase(c);
 					base[state] = nextbase;
 					int next = nextbase + key(c);
 					check[next] = state;
@@ -449,7 +243,7 @@ public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
 					taili++;
 				}
 
-				int nextbase = xcheck(activeTail[taili]);
+				int nextbase = freebase(activeTail[taili]);
 				base[state] = nextbase;
 
 				char tc = activeTail[taili];
@@ -471,7 +265,7 @@ public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
 					char[] tailchars = tail[state];
 					int taili = 0;
 					char tc = tailchars[taili];
-					int nextbase = xcheck(tc);
+					int nextbase = freebase(tc);
 					base[state] = nextbase;
 
 					int tailnext = nextbase + key(tc);
@@ -486,6 +280,15 @@ public class DoubleArrayCharCompactTrie<T> implements DoubleArrayCharTrie<T> {
 				}
 				tail[state] = NO_CHARS;
 				attachments[state] = out;
+			}
+		}
+
+		private void addAlt(int state, char c) {
+			char[] chars = alts[state];
+			if (chars != null) {
+				alts[state] = join(chars, c);
+			} else {
+				alts[state] = new char[] {c};
 			}
 		}
 

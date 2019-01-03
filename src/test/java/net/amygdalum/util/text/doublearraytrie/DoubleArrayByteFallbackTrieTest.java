@@ -8,20 +8,31 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import net.amygdalum.util.text.AttachmentAdaptor;
+import net.amygdalum.util.text.ByteAutomaton;
+import net.amygdalum.util.text.ByteFallbackLinks;
+import net.amygdalum.util.text.ByteFallbackNavigator;
+import net.amygdalum.util.text.ByteTrie;
+import net.amygdalum.util.text.ByteWordSetBuilder;
 
 public class DoubleArrayByteFallbackTrieTest {
 
-	private DoubleArrayByteFallbackTrie<String> trie;
+	private static final byte c = (byte) 'c';
+	private static final byte g = (byte) 'g';
+	private static final byte a = (byte) 'a';
+	private static final byte t = (byte) 't';
+
+	private ByteWordSetBuilder<String, ByteTrie<String>> builder;
 
 	@Before
 	public void before() throws Exception {
-		trie = new DoubleArrayByteFallbackTrie<>();
+		builder = new ByteWordSetBuilder<>(new DoubleArrayByteFallbackTrieCompiler<String>());
 	}
 
 	@Test
 	public void testSingleNode() throws Exception {
-		trie.insert("bachelor".getBytes("UTF-8"), "Bachelor");
+		ByteTrie<String> trie = builder
+			.extend("bachelor".getBytes("UTF-8"), "Bachelor")
+			.build();
 
 		assertThat(trie.contains("bachelor".getBytes("UTF-8")), is(true));
 		assertThat(trie.find("bachelor".getBytes("UTF-8")), equalTo("Bachelor"));
@@ -32,8 +43,10 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testMultipleNonCollidingNodes() throws Exception {
-		trie.insert("bachelor".getBytes("UTF-8"), "Bachelor");
-		trie.insert("jar".getBytes("UTF-8"), "Jar");
+		ByteTrie<String> trie = builder
+			.extend("bachelor".getBytes("UTF-8"), "Bachelor")
+			.extend("jar".getBytes("UTF-8"), "Jar")
+			.build();
 
 		assertThat(trie.find("bachelor".getBytes("UTF-8")), equalTo("Bachelor"));
 		assertThat(trie.contains("jar".getBytes("UTF-8")), is(true));
@@ -42,9 +55,11 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testMultipleCollidingNodes() throws Exception {
-		trie.insert("bachelor".getBytes("UTF-8"), "Bachelor");
-		trie.insert("jar".getBytes("UTF-8"), "Jar");
-		trie.insert("badge".getBytes("UTF-8"), "Badge");
+		ByteTrie<String> trie = builder
+			.extend("bachelor".getBytes("UTF-8"), "Bachelor")
+			.extend("jar".getBytes("UTF-8"), "Jar")
+			.extend("badge".getBytes("UTF-8"), "Badge")
+			.build();
 
 		assertThat(trie.find("bachelor".getBytes("UTF-8")), equalTo("Bachelor"));
 		assertThat(trie.find("jar".getBytes("UTF-8")), equalTo("Jar"));
@@ -54,10 +69,12 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testMultipleMoreCollidingNodes() throws Exception {
-		trie.insert("bachelor".getBytes("UTF-8"), "Bachelor");
-		trie.insert("jar".getBytes("UTF-8"), "Jar");
-		trie.insert("badge".getBytes("UTF-8"), "Badge");
-		trie.insert("baby".getBytes("UTF-8"), "Baby");
+		ByteTrie<String> trie = builder
+			.extend("bachelor".getBytes("UTF-8"), "Bachelor")
+			.extend("jar".getBytes("UTF-8"), "Jar")
+			.extend("badge".getBytes("UTF-8"), "Badge")
+			.extend("baby".getBytes("UTF-8"), "Baby")
+			.build();
 
 		assertThat(trie.find("bachelor".getBytes("UTF-8")), equalTo("Bachelor"));
 		assertThat(trie.find("jar".getBytes("UTF-8")), equalTo("Jar"));
@@ -68,8 +85,10 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testMultipleSubsumingNodes() throws Exception {
-		trie.insert("bac".getBytes("UTF-8"), "Bac");
-		trie.insert("bachelor".getBytes("UTF-8"), "Bachelor");
+		ByteTrie<String> trie = builder
+			.extend("bac".getBytes("UTF-8"), "Bac")
+			.extend("bachelor".getBytes("UTF-8"), "Bachelor")
+			.build();
 
 		assertThat(trie.find("bachelor".getBytes("UTF-8")), equalTo("Bachelor"));
 		assertThat(trie.find("bac".getBytes("UTF-8")), equalTo("Bac"));
@@ -77,8 +96,10 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testMultipleSubsumedNodes() throws Exception {
-		trie.insert("bachelor".getBytes("UTF-8"), "Bachelor");
-		trie.insert("bac".getBytes("UTF-8"), "Bac");
+		ByteTrie<String> trie = builder
+			.extend("bachelor".getBytes("UTF-8"), "Bachelor")
+			.extend("bac".getBytes("UTF-8"), "Bac")
+			.build();
 
 		assertThat(trie.find("bachelor".getBytes("UTF-8")), equalTo("Bachelor"));
 		assertThat(trie.find("bac".getBytes("UTF-8")), equalTo("Bac"));
@@ -86,10 +107,12 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testMultipleSubsumedNodes2() throws Exception {
-		trie.insert("abcd".getBytes("UTF-8"), "ABCD");
-		trie.insert("ab".getBytes("UTF-8"), "AB");
-		trie.insert("bc".getBytes("UTF-8"), "BC");
-		trie.insert("cd".getBytes("UTF-8"), "CD");
+		ByteTrie<String> trie = builder
+			.extend("abcd".getBytes("UTF-8"), "ABCD")
+			.extend("ab".getBytes("UTF-8"), "AB")
+			.extend("bc".getBytes("UTF-8"), "BC")
+			.extend("cd".getBytes("UTF-8"), "CD")
+			.build();
 
 		assertThat(trie.find("abcd".getBytes("UTF-8")), equalTo("ABCD"));
 		assertThat(trie.find("ab".getBytes("UTF-8")), equalTo("AB"));
@@ -99,9 +122,11 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testMultipleSubsumedNodes3() throws Exception {
-		trie.insert("aaa".getBytes("UTF-8"), "AAA");
-		trie.insert("aa".getBytes("UTF-8"), "AA");
-		trie.insert("a".getBytes("UTF-8"), "A");
+		ByteTrie<String> trie = builder
+			.extend("aaa".getBytes("UTF-8"), "AAA")
+			.extend("aa".getBytes("UTF-8"), "AA")
+			.extend("a".getBytes("UTF-8"), "A")
+			.build();
 
 		assertThat(trie.find("aaa".getBytes("UTF-8")), equalTo("AAA"));
 		assertThat(trie.find("aa".getBytes("UTF-8")), equalTo("AA"));
@@ -110,8 +135,10 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testAttachments() throws Exception {
-		trie.insert("abc".getBytes("UTF-8"), "ABC");
-		trie.insert("bcd".getBytes("UTF-8"), "BCD");
+		ByteTrie<String> trie = builder
+			.extend("abc".getBytes("UTF-8"), "ABC")
+			.extend("bcd".getBytes("UTF-8"), "BCD")
+			.build();
 
 		assertThat(trie.find("abc".getBytes("UTF-8")), equalTo("ABC"));
 		assertThat(trie.find("bcd".getBytes("UTF-8")), equalTo("BCD"));
@@ -123,9 +150,11 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testAttachments2() throws Exception {
-		trie.insert("".getBytes("UTF-8"), "");
-		trie.insert("a".getBytes("UTF-8"), "A");
-		trie.insert("b".getBytes("UTF-8"), "B");
+		ByteTrie<String> trie = builder
+			.extend("".getBytes("UTF-8"), "")
+			.extend("a".getBytes("UTF-8"), "A")
+			.extend("b".getBytes("UTF-8"), "B")
+			.build();
 
 		assertThat(trie.find("".getBytes("UTF-8")), equalTo(""));
 		assertThat(trie.find("a".getBytes("UTF-8")), equalTo("A"));
@@ -135,8 +164,10 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testAttachments3() throws Exception {
-		trie.insert("ab".getBytes("UTF-8"), "AB");
-		trie.insert("aa".getBytes("UTF-8"), "AA");
+		ByteTrie<String> trie = builder
+			.extend("ab".getBytes("UTF-8"), "AB")
+			.extend("aa".getBytes("UTF-8"), "AA")
+			.build();
 
 		assertThat(trie.find("ab".getBytes("UTF-8")), equalTo("AB"));
 		assertThat(trie.find("aa".getBytes("UTF-8")), equalTo("AA"));
@@ -145,13 +176,15 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testAttachments4() throws Exception {
-		trie.insert("bb".getBytes("UTF-8"), "BB");
-		trie.insert("ba".getBytes("UTF-8"), "BA");
-		trie.insert("bbc".getBytes("UTF-8"), "BBC");
-		trie.insert("bbd".getBytes("UTF-8"), "BBD");
-		trie.insert("bbf".getBytes("UTF-8"), "BBF");
-		trie.insert("bbg".getBytes("UTF-8"), "BBG");
-		trie.insert("bba".getBytes("UTF-8"), "BBA");
+		ByteTrie<String> trie = builder
+			.extend("bb".getBytes("UTF-8"), "BB")
+			.extend("ba".getBytes("UTF-8"), "BA")
+			.extend("bbc".getBytes("UTF-8"), "BBC")
+			.extend("bbd".getBytes("UTF-8"), "BBD")
+			.extend("bbf".getBytes("UTF-8"), "BBF")
+			.extend("bbg".getBytes("UTF-8"), "BBG")
+			.extend("bba".getBytes("UTF-8"), "BBA")
+			.build();
 
 		assertThat(trie.find("bb".getBytes("UTF-8")), equalTo("BB"));
 		assertThat(trie.find("ba".getBytes("UTF-8")), equalTo("BA"));
@@ -164,10 +197,12 @@ public class DoubleArrayByteFallbackTrieTest {
 
 	@Test
 	public void testAttachments5() throws Exception {
-		trie.insert("cc".getBytes("UTF-8"), "CC");
-		trie.insert("ca".getBytes("UTF-8"), "CA");
-		trie.insert("ac".getBytes("UTF-8"), "AC");
-		trie.insert("aa".getBytes("UTF-8"), "AA");
+		ByteTrie<String> trie = builder
+			.extend("cc".getBytes("UTF-8"), "CC")
+			.extend("ca".getBytes("UTF-8"), "CA")
+			.extend("ac".getBytes("UTF-8"), "AC")
+			.extend("aa".getBytes("UTF-8"), "AA")
+			.build();
 
 		assertThat(trie.find("cc".getBytes("UTF-8")), equalTo("CC"));
 		assertThat(trie.find("ca".getBytes("UTF-8")), equalTo("CA"));
@@ -176,33 +211,37 @@ public class DoubleArrayByteFallbackTrieTest {
 	}
 
 	@Test
-	public void testLargeCharacterSpace() throws Exception {
-		for (int i = 0; i < 1024; i++) {
-			char c = (char) i;
-			String s = String.valueOf(c);
-			trie.insert(s.getBytes("UTF-8"), "" + i);
-		}
-		
-		assertThat(trie.find("\u0000".getBytes("UTF-8")), equalTo("0"));
+	public void testLargeByteacterSpace() throws Exception {
+		ByteTrie<String> trie = builder
+			.extend("\u9999".getBytes("UTF-8"), "U9999")
+			.extend("\u0000".getBytes("UTF-8"), "U0000")
+			.build();
+
+		assertThat(trie.find("\u9999".getBytes("UTF-8")), equalTo("U9999"));
+		assertThat(trie.find("\u0000".getBytes("UTF-8")), equalTo("U0000"));
 	}
-	
+
 	@Test
 	public void testDoubleSubsumedNodes() throws Exception {
-		trie.insert(new StringBuilder("and wood to fire").reverse().toString().getBytes("UTF-8"), "and wood to fire");
-		trie.insert(new StringBuilder("Then shalt thou enquire").reverse().toString().getBytes("UTF-8"), "Then shalt thou enquire");
-		trie.insert(new StringBuilder("fire").reverse().toString().getBytes("UTF-8"), "fire");
+		ByteTrie<String> trie = builder
+			.extend(new StringBuilder("and wood to fire").reverse().toString().getBytes("UTF-8"), "and wood to fire")
+			.extend(new StringBuilder("Then shalt thou enquire").reverse().toString().getBytes("UTF-8"), "Then shalt thou enquire")
+			.extend(new StringBuilder("fire").reverse().toString().getBytes("UTF-8"), "fire")
+			.build();
 
 		assertThat(trie.find(new StringBuilder("and wood to fire").reverse().toString().getBytes("UTF-8")), equalTo("and wood to fire"));
 		assertThat(trie.find(new StringBuilder("Then shalt thou enquire").reverse().toString().getBytes("UTF-8")), equalTo("Then shalt thou enquire"));
 		assertThat(trie.find(new StringBuilder("fire").reverse().toString().getBytes("UTF-8")), equalTo("fire"));
 	}
-		
+
 	@Test
 	public void testStrings() throws Exception {
 		String a = (char) 0 + "a";
 		String b = (char) 0 + "b";
-		trie.insert(a.getBytes("UTF-8"), "A");
-		trie.insert(b.getBytes("UTF-8"), "B");
+		ByteTrie<String> trie = builder
+			.extend(a.getBytes("UTF-8"), "A")
+			.extend(b.getBytes("UTF-8"), "B")
+			.build();
 
 		assertThat(trie.find(a.getBytes("UTF-8")), equalTo("A"));
 		assertThat(trie.find(b.getBytes("UTF-8")), equalTo("B"));
@@ -211,7 +250,9 @@ public class DoubleArrayByteFallbackTrieTest {
 	@Test
 	public void testAsNodeSingleNode() throws Exception {
 		byte[] bachelor = "bachelor".getBytes("UTF-8");
-		trie.insert(bachelor, "Bachelor");
+		ByteTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -228,9 +269,11 @@ public class DoubleArrayByteFallbackTrieTest {
 	@Test
 	public void testAsNodeMutlipleNonCollidingNodes() throws Exception {
 		byte[] bachelor = "bachelor".getBytes("UTF-8");
-		trie.insert(bachelor, "Bachelor");
 		byte[] jar = "jar".getBytes("UTF-8");
-		trie.insert(jar, "Jar");
+		ByteTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(jar, "Jar")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -252,11 +295,13 @@ public class DoubleArrayByteFallbackTrieTest {
 	@Test
 	public void testAsNodeMultipleCollidingNodes() throws Exception {
 		byte[] bachelor = "bachelor".getBytes("UTF-8");
-		trie.insert(bachelor, "Bachelor");
 		byte[] jar = "jar".getBytes("UTF-8");
-		trie.insert(jar, "Jar");
 		byte[] badge = "badge".getBytes("UTF-8");
-		trie.insert(badge, "Badge");
+		ByteTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(jar, "Jar")
+			.extend(badge, "Badge")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -285,13 +330,15 @@ public class DoubleArrayByteFallbackTrieTest {
 	@Test
 	public void testAsNodeMultipleMoreCollidingNodes() throws Exception {
 		byte[] bachelor = "bachelor".getBytes("UTF-8");
-		trie.insert(bachelor, "Bachelor");
 		byte[] jar = "jar".getBytes("UTF-8");
-		trie.insert(jar, "Jar");
 		byte[] badge = "badge".getBytes("UTF-8");
-		trie.insert(badge, "Badge");
 		byte[] baby = "baby".getBytes("UTF-8");
-		trie.insert(baby, "Baby");
+		ByteTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(jar, "Jar")
+			.extend(badge, "Badge")
+			.extend(baby, "Baby")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -326,9 +373,11 @@ public class DoubleArrayByteFallbackTrieTest {
 	@Test
 	public void testAsNodeMultipleSubsumedNodes() throws Exception {
 		byte[] bachelor = "bachelor".getBytes("UTF-8");
-		trie.insert(bachelor, "Bachelor");
 		byte[] bac = "bac".getBytes("UTF-8");
-		trie.insert(bac, "Bac");
+		ByteTrie<String> trie = builder
+			.extend(bachelor, "Bachelor")
+			.extend(bac, "Bac")
+			.build();
 
 		assertThat(trie.navigator()
 			.nextNode(bachelor[0])
@@ -347,53 +396,70 @@ public class DoubleArrayByteFallbackTrieTest {
 			.getAttached(), equalTo("Bac"));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void testAsNodeMultipleReattachments() throws Exception {
-		byte[] bachelor = "bachelor".getBytes("UTF-8");
-		trie.insert(bachelor, "Bachelor");
-		byte[] bac = "bac".getBytes("UTF-8");
-		trie.insert(bac, "Bac");
-
-		((AttachmentAdaptor<String>) trie.navigator()
-		.nextNode(bachelor[0])
-		.nextNode(bachelor[1])
-		.nextNode(bachelor[2])
-		.nextNode(bachelor[3])
-		.nextNode(bachelor[4]))
-		.attach("Bache");
-
-		((AttachmentAdaptor<String>) trie.navigator()
-		.nextNode(bachelor[0])
-		.nextNode(bachelor[1]))
-		.attach("Ba");
+	public void testFallback() throws Exception {
+		ByteTrie<String> trie = builder
+			.extend("gat".getBytes("UTF-8"), "GAT")
+			.extend("cgatggg".getBytes("UTF-8"), "CGATGGG")
+			.work(new ByteFallbackLinks())
+			.build();
 
 		assertThat(trie.navigator()
-			.nextNode(bachelor[0])
-			.nextNode(bachelor[1])
-			.nextNode(bachelor[2])
-			.nextNode(bachelor[3])
-			.nextNode(bachelor[4])
-			.nextNode(bachelor[5])
-			.nextNode(bachelor[6])
-			.nextNode(bachelor[7])
-			.getAttached(), equalTo("Bachelor"));
-		assertThat(trie.navigator()
-			.nextNode(bachelor[0])
-			.nextNode(bachelor[1])
-			.nextNode(bachelor[2])
-			.nextNode(bachelor[3])
-			.nextNode(bachelor[4])
-			.getAttached(), equalTo("Bache"));
-		assertThat(trie.navigator()
-			.nextNode(bac[0])
-			.nextNode(bac[1])
-			.nextNode(bac[2])
-			.getAttached(), equalTo("Bac"));
-		assertThat(trie.navigator()
-			.nextNode(bachelor[0])
-			.nextNode(bachelor[1])
-			.getAttached(), equalTo("Ba"));
+			.nextNode(c)
+			.nextNode(g)
+			.nextNode(a)
+			.nextNode(t)
+			.nextNode(g)
+			.nextNode(g)
+			.nextNode(g)
+			.getAttached(), equalTo("CGATGGG"));
+		assertThat(((ByteFallbackNavigator<String, ?>) trie.navigator())
+			.nextNode(c)
+			.nextNode(g)
+			.nextNode(a)
+			.nextNode(t)
+			.fallback()
+			.getAttached(), equalTo("GAT"));
+	}
+
+	@Test
+	public void testCursor() throws Exception {
+		ByteTrie<String> trie = builder
+			.extend("gat".getBytes("UTF-8"), "GAT")
+			.extend("cgatggg".getBytes("UTF-8"), "CGATGGG")
+			.work(new ByteFallbackLinks())
+			.build();
+
+		ByteAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept(c), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(a), is(true));
+		assertThat(cursor.accept(t), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("GAT"));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("CGATGGG"));
+	}
+
+	@Test
+	public void testCursor2() throws Exception {
+		ByteTrie<String> trie = builder
+			.extend("gatc".getBytes("UTF-8"), "GATC")
+			.extend("cgatggg".getBytes("UTF-8"), "CGATGGG")
+			.work(new ByteFallbackLinks())
+			.build();
+
+		ByteAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept(c), is(true));
+		assertThat(cursor.accept(g), is(true));
+		assertThat(cursor.accept(a), is(true));
+		assertThat(cursor.accept(t), is(true));
+		assertThat(cursor.accept(c), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("GATC"));
 	}
 
 }

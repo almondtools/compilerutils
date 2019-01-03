@@ -1,7 +1,6 @@
 package net.amygdalum.util.text.doublearraytrie;
 
 import static net.amygdalum.util.text.doublearraytrie.Arrays.expand;
-import static net.amygdalum.util.text.doublearraytrie.Arrays.join;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -9,9 +8,10 @@ import java.util.NoSuchElementException;
 import net.amygdalum.util.text.AttachmentAdaptor;
 import net.amygdalum.util.text.CharAutomaton;
 import net.amygdalum.util.text.CharFallbackNavigator;
+import net.amygdalum.util.text.CharTrie;
 import net.amygdalum.util.text.WordSetNavigationException;
 
-public class DoubleArrayCharFallbackTrie<T> implements DoubleArrayCharTrie<T> {
+public class DoubleArrayCharFallbackTrie<T> implements CharTrie<T> {
 
 	private static final int INITIAL_SIZE = 1024;
 	private static final int STOP = -1;
@@ -35,96 +35,7 @@ public class DoubleArrayCharFallbackTrie<T> implements DoubleArrayCharTrie<T> {
 		return (int) c + 1;
 	}
 
-	public void insert(char[] chars, T out) {
-		int state = 1;
-		if (base[state] == 0) {
-			base[state] = 1;
-			alts[state] = new char[0];
-		}
-		for (int i = 0; i < chars.length; i++) {
-			int statebase = base[state];
-			if (statebase <= 0) {
-				statebase = xcheck(chars[i]);
-				base[state] = statebase;
-			}
-			char c = chars[i];
-			int next = statebase + key(c);
-			ensureSufficientLength(next);
-			if (check[next] == 0) {
-				check[next] = state;
-				addAlt(state, c);
-			} else if (check[next] != state) {
-				int collidingstate = check[next];
-
-				char[] altsCurrent = alts[state];
-				char[] altsColliding = alts[collidingstate];
-
-				if (altsCurrent.length + 1 <= altsColliding.length || check[state] == collidingstate) {
-					int newbase = xcheck(join(altsCurrent, c));
-					remap(state, newbase, altsCurrent);
-					next = base[state] + key(c);
-				} else {
-					int newbase = xcheck(altsColliding);
-					remap(collidingstate, newbase, altsColliding);
-				}
-
-				check[next] = state;
-				addAlt(state, c);
-			}
-			state = next;
-		}
-		if (base[state] == 0) {
-			base[state] = STOP;
-			alts[state] = new char[0];
-		}
-		attachments[state] = out;
-	}
-
-	private void ensureSufficientLength(int next) {
-		if (next >= check.length) {
-			check = expand(check, next);
-			base = expand(base, next);
-			fallback = expand(fallback, next);
-			alts = expand(alts, next);
-			attachments = expand(attachments, next);
-		}
-	}
-
-	private void addAlt(int state, char c) {
-		char[] chars = alts[state];
-		if (chars != null) {
-			alts[state] = join(chars, c);
-		} else {
-			alts[state] = new char[] {c};
-		}
-	}
-
-	private void remap(int remap, int newbase, char[] alternatives) {
-		int remapbase = base[remap];
-
-		base[remap] = newbase;
-
-		for (char ac : alternatives) {
-			int abremap = remapbase + key(ac);
-			int abnew = newbase + key(ac);
-			base[abnew] = base[abremap];
-			check[abnew] = check[abremap];
-			alts[abnew] = alts[abremap];
-			attachments[abnew] = attachments[abremap];
-			if (base[abremap] > 0) {
-				char[] altsremap = alts[abremap];
-				for (char rc : altsremap) {
-					check[base[abremap] + key(rc)] = abnew;
-				}
-			}
-			base[abremap] = 0;
-			check[abremap] = 0;
-			alts[abremap] = null;
-			attachments[abremap] = null;
-		}
-	}
-
-	private int xcheck(char... input) {
+	private int freebase(char... input) {
 		int nextbase = 0;
 		nextState: while (nextbase >= 0) {
 			nextbase++;
@@ -138,6 +49,16 @@ public class DoubleArrayCharFallbackTrie<T> implements DoubleArrayCharTrie<T> {
 			return nextbase;
 		}
 		return -1;
+	}
+
+	private void ensureSufficientLength(int next) {
+		if (next >= check.length) {
+			check = expand(check, next);
+			base = expand(base, next);
+			fallback = expand(fallback, next);
+			alts = expand(alts, next);
+			attachments = expand(attachments, next);
+		}
 	}
 
 	@Override
@@ -202,7 +123,7 @@ public class DoubleArrayCharFallbackTrie<T> implements DoubleArrayCharTrie<T> {
 			assert trie.base[state] == 0 && trie.alts[state] == null;
 			int[] nexts = new int[alternatives.length];
 
-			int newbase = freebase(alternatives);
+			int newbase = trie.freebase(alternatives);
 			trie.base[state] = newbase;
 			trie.alts[state] = Arrays.sorted(alternatives);
 			for (int i = 0; i < alternatives.length; i++) {
@@ -224,32 +145,6 @@ public class DoubleArrayCharFallbackTrie<T> implements DoubleArrayCharTrie<T> {
 
 		public void terminate(int state) {
 			trie.base[state] = STOP;
-		}
-
-		private int freebase(char... input) {
-			int nextbase = 0;
-			nextState: while (nextbase >= 0) {
-				nextbase++;
-				for (char c : input) {
-					int next = nextbase + key(c);
-					ensureSufficientLength(next);
-					if (trie.check[next] != 0) {
-						continue nextState;
-					}
-				}
-				return nextbase;
-			}
-			return -1;
-		}
-
-		private void ensureSufficientLength(int next) {
-			if (next >= trie.check.length) {
-				trie.check = expand(trie.check, next);
-				trie.base = expand(trie.base, next);
-				trie.fallback = expand(trie.fallback, next);
-				trie.alts = expand(trie.alts, next);
-				trie.attachments = expand(trie.attachments, next);
-			}
 		}
 
 		public DoubleArrayCharFallbackTrie<T> build() {
