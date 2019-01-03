@@ -462,4 +462,33 @@ public class DoubleArrayByteFallbackTrieTest {
 		assertThat(cursor.iterator().next(), equalTo("GATC"));
 	}
 
+	@Test
+	public void testCursor3() throws Exception {
+		ByteTrie<String> trie = builder
+			.extend("aa\u0262ba".getBytes("UTF-8"), "A")
+			.extend("a\u0262baa".getBytes("UTF-8"), "B")
+			.work(new ByteFallbackLinks())
+			.build();
+
+		byte[] bytes = "xaaa\u0262ba\u0262baa".getBytes("UTF-8");
+		ByteAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept(bytes[0]), is(false));
+		assertThat(cursor.accept(bytes[1]), is(true));
+		assertThat(cursor.accept(bytes[2]), is(true));
+		assertThat(cursor.accept(bytes[3]), is(true));
+		assertThat(cursor.accept(bytes[4]), is(true));
+		assertThat(cursor.accept(bytes[5]), is(true));
+		assertThat(cursor.accept(bytes[6]), is(true));
+		assertThat(cursor.accept(bytes[7]), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("A"));
+		assertThat(cursor.accept(bytes[8]), is(true));
+		assertThat(cursor.accept(bytes[9]), is(true));
+		assertThat(cursor.accept(bytes[10]), is(true));
+		assertThat(cursor.accept(bytes[11]), is(true));
+		assertThat(cursor.accept(bytes[12]), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("B"));
+	}
+
 }

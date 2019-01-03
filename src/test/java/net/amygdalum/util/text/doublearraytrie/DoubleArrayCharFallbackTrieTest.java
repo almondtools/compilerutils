@@ -457,4 +457,30 @@ public class DoubleArrayCharFallbackTrieTest {
 		assertThat(cursor.iterator().next(), equalTo("GATC"));
 	}
 
+	@Test
+	public void testCursor3() throws Exception {
+		CharTrie<String> trie = builder
+			.extend("aa\u0262ba".toCharArray(), "A")
+			.extend("a\u0262baa".toCharArray(), "B")
+			.work(new CharFallbackLinks())
+			.build();
+
+		CharAutomaton<String> cursor = trie.cursor();
+		assertThat(cursor.accept('x'), is(false));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.accept('\u0262'), is(true));
+		assertThat(cursor.accept('b'), is(true));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("A"));
+		assertThat(cursor.accept('\u0262'), is(true));
+		assertThat(cursor.accept('b'), is(true));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.accept('a'), is(true));
+		assertThat(cursor.hasAttachments(), is(true));
+		assertThat(cursor.iterator().next(), equalTo("B"));
+	}
+
 }

@@ -14,6 +14,8 @@ import net.amygdalum.util.text.WordSetNavigationException;
 public class DoubleArrayCharFallbackTrie<T> implements CharTrie<T> {
 
 	private static final int INITIAL_SIZE = 1024;
+	private static final int MAX_SPACE = Character.MAX_VALUE;
+
 	private static final int STOP = -1;
 
 	private int[] base;
@@ -22,6 +24,8 @@ public class DoubleArrayCharFallbackTrie<T> implements CharTrie<T> {
 	private char[][] alts;
 	private T[] attachments;
 
+	private int nextCheck;
+
 	@SuppressWarnings("unchecked")
 	public DoubleArrayCharFallbackTrie() {
 		this.base = new int[INITIAL_SIZE];
@@ -29,26 +33,67 @@ public class DoubleArrayCharFallbackTrie<T> implements CharTrie<T> {
 		this.fallback = new int[INITIAL_SIZE];
 		this.alts = new char[INITIAL_SIZE][];
 		this.attachments = (T[]) new Object[INITIAL_SIZE];
+		this.nextCheck = 1;
 	}
 
 	private static int key(char c) {
 		return (int) c + 1;
 	}
 
+	private static int minKey(char... input) {
+		char min = Character.MAX_VALUE;
+		for (char c : input) {
+			if (c < min) {
+				min = c;
+			}
+		}
+		return key(min);
+	}
+
 	private int freebase(char... input) {
-		int nextbase = 0;
-		nextState: while (nextbase >= 0) {
-			nextbase++;
+		if (input.length == 0) {
+			return -1;
+		}
+		int pivotKey = minKey(input);
+		int predictedNext = Math.max(pivotKey + 1, nextCheck);
+
+		ensureSufficientLength(predictedNext);
+		while (check[predictedNext] != 0) {
+			predictedNext++;
+			ensureSufficientLength(predictedNext);
+		}
+		nextCheck = predictedNext;
+
+		int nextbase = -1;
+		int blocked = 0;
+		while (predictedNext < Integer.MAX_VALUE) {
+			ensureSufficientLength(predictedNext + MAX_SPACE);
+			if (check[predictedNext] != 0) {
+				blocked++;
+				predictedNext++;
+				continue;
+			}
+			nextbase = predictedNext - pivotKey;
+			boolean found = true;
 			for (char c : input) {
 				int next = nextbase + key(c);
-				ensureSufficientLength(next);
 				if (check[next] != 0) {
-					continue nextState;
+					found = false;
+					break;
 				}
 			}
-			return nextbase;
+			if (found) {
+				break;
+			} else {
+				predictedNext++;
+			}
 		}
-		return -1;
+		int checked = predictedNext - nextCheck;
+		int free = checked - blocked;
+		if ((checked >> 5) > free) {
+			nextCheck = predictedNext;
+		}
+		return nextbase;
 	}
 
 	private void ensureSufficientLength(int next) {
@@ -230,7 +275,7 @@ public class DoubleArrayCharFallbackTrie<T> implements CharTrie<T> {
 				statebase = base[state];
 			}
 			int next = statebase + key(c);
-			while (state > 1 && next < check.length && check[next] != state) {
+			while (state > 1 && (next >= check.length || check[next] != state)) {
 				state = fallback[state];
 				statebase = base[state];
 				next = statebase + key(c);

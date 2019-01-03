@@ -25,6 +25,7 @@ import net.amygdalum.util.text.WordSetNavigationException;
 public class DoubleArrayByteCompactTrie<T> implements ByteTrie<T> {
 
 	private static final int INITIAL_SIZE = 1024;
+	private static final int MAX_SPACE = Byte.MAX_VALUE + 128;
 
 	private static final int STOP = -1;
 
@@ -34,6 +35,8 @@ public class DoubleArrayByteCompactTrie<T> implements ByteTrie<T> {
 	private byte[][] alts;
 	private T[] attachments;
 
+	private int nextCheck;
+
 	@SuppressWarnings("unchecked")
 	public DoubleArrayByteCompactTrie() {
 		this.base = new int[INITIAL_SIZE];
@@ -41,26 +44,67 @@ public class DoubleArrayByteCompactTrie<T> implements ByteTrie<T> {
 		this.tail = new byte[INITIAL_SIZE][];
 		this.alts = new byte[INITIAL_SIZE][];
 		this.attachments = (T[]) new Object[INITIAL_SIZE];
+		this.nextCheck = 1;
 	}
 
 	private static int key(byte b) {
 		return ((int) b) + 129;
 	}
 
+	private static int minKey(byte... input) {
+		byte min = Byte.MAX_VALUE;
+		for (byte b : input) {
+			if (b < min) {
+				min = b;
+			}
+		}
+		return key(min);
+	}
+
 	private int freebase(byte... input) {
-		int nextbase = 0;
-		nextState: while (nextbase >= 0) {
-			nextbase++;
+		if (input.length == 0) {
+			return -1;
+		}
+		int pivotKey = minKey(input);
+		int predictedNext = Math.max(pivotKey + 1, nextCheck);
+
+		ensureSufficientLength(predictedNext);
+		while (check[predictedNext] != 0) {
+			predictedNext++;
+			ensureSufficientLength(predictedNext);
+		}
+		nextCheck = predictedNext;
+
+		int nextbase = -1;
+		int blocked = 0;
+		while (predictedNext < Integer.MAX_VALUE) {
+			ensureSufficientLength(predictedNext + MAX_SPACE);
+			if (check[predictedNext] != 0) {
+				blocked++;
+				predictedNext++;
+				continue;
+			}
+			nextbase = predictedNext - pivotKey;
+			boolean found = true;
 			for (byte b : input) {
 				int next = nextbase + key(b);
-				ensureSufficientLength(next);
 				if (check[next] != 0) {
-					continue nextState;
+					found = false;
+					break;
 				}
 			}
-			return nextbase;
+			if (found) {
+				break;
+			} else {
+				predictedNext++;
+			}
 		}
-		return -1;
+		int checked = predictedNext - nextCheck;
+		int free = checked - blocked;
+		if ((checked >> 5) > free) {
+			nextCheck = predictedNext;
+		}
+		return nextbase;
 	}
 
 	private void ensureSufficientLength(int next) {
