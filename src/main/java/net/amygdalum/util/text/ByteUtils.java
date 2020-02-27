@@ -51,7 +51,27 @@ public final class ByteUtils {
 		return len;
 	}
 
+	public static int minLength(byte[][] patterns) {
+		int len = Integer.MAX_VALUE;
+		for (byte[] pattern : patterns) {
+			if (pattern.length < len) {
+				len = pattern.length;
+			}
+		}
+		return len;
+	}
+
 	public static int maxLength(List<byte[]> patterns) {
+		int len = Integer.MIN_VALUE;
+		for (byte[] pattern : patterns) {
+			if (pattern.length > len) {
+				len = pattern.length;
+			}
+		}
+		return len;
+	}
+
+	public static int maxLength(byte[][] patterns) {
 		int len = Integer.MIN_VALUE;
 		for (byte[] pattern : patterns) {
 			if (pattern.length > len) {

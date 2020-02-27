@@ -126,7 +126,27 @@ public final class CharUtils {
 		return len;
 	}
 
+	public static int minLength(char[][] patterns) {
+		int len = Integer.MAX_VALUE;
+		for (char[] pattern : patterns) {
+			if (pattern.length < len) {
+				len = pattern.length;
+			}
+		}
+		return len;
+	}
+
 	public static int maxLength(List<char[]> patterns) {
+		int len = Integer.MIN_VALUE;
+		for (char[] pattern : patterns) {
+			if (pattern.length > len) {
+				len = pattern.length;
+			}
+		}
+		return len;
+	}
+
+	public static int maxLength(char[][] patterns) {
 		int len = Integer.MIN_VALUE;
 		for (char[] pattern : patterns) {
 			if (pattern.length > len) {
