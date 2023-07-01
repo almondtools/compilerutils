@@ -1,7 +1,6 @@
 CompilerUtils
 =============
-[![Build Status](https://api.travis-ci.org/almondtools/compilerutils.svg)](https://travis-ci.org/almondtools/compilerutils)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7c9f429142624e3ca104ce4d67876dab)](https://www.codacy.com/project/almondtools/compilerutils/dashboard?utm_source=github.com&utm_medium=referral&utm_content=almondtools/compilerutils&utm_campaign=Badge_Grade_Dashboard)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/7c9f429142624e3ca104ce4d67876dab)](https://app.codacy.com/gh/almondtools/compilerutils/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 Maven Dependency
 ================
